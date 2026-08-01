@@ -100,9 +100,6 @@
     color: #f0abfc;
     font-size: 13px;
   }
-  .highlight-red { color: #fca5a5; font-weight: bold; }
-  .highlight-green { color: #86efac; font-weight: bold; }
-  .highlight-yellow { color: #fde047; font-weight: bold; }
   .controls {
     margin-top: 16px;
     text-align: center;
@@ -120,6 +117,27 @@
   }
   .controls button:hover { background: #475569; border-color: #64748b; }
   .controls button.active { background: #3b82f6; border-color: #60a5fa; }
+  .global-controls {
+    margin: 20px 0;
+    text-align: center;
+  }
+  .global-controls button {
+    padding: 10px 28px;
+    margin: 0 8px;
+    border: 1px solid #475569;
+    border-radius: 10px;
+    background: #334155;
+    color: #e2e8f0;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: bold;
+    transition: all 0.2s;
+  }
+  .global-controls button:hover { background: #475569; border-color: #64748b; }
+  .global-controls button.start-all { background: #1e3a5f; border-color: #3b82f6; }
+  .global-controls button.start-all:hover { background: #2563eb; }
+  .global-controls button.reset-all { background: #3f1d1d; border-color: #ef4444; }
+  .global-controls button.reset-all:hover { background: #dc2626; }
   .speed-label {
     text-align: center;
     margin-top: 8px;
@@ -139,6 +157,11 @@
 <h1>球磨机转速演示</h1>
 <p class="subtitle">药剂学 · 粉碎设备 · 转速对研磨效果的影响</p>
 
+<div class="global-controls">
+  <button class="start-all" onclick="startAll()">▶ 对比播放（三个同时开始）</button>
+  <button class="reset-all" onclick="resetAll()">↺ 全部重置</button>
+</div>
+
 <div class="container">
 
   <!-- 转速过慢 -->
@@ -149,10 +172,14 @@
     </div>
     <canvas id="canvas-slow" width="300" height="300"></canvas>
     <div class="speed-label">转速: <span>30 rpm</span> | 临界转速: <span>100 rpm</span></div>
+    <div class="controls">
+      <button id="btn-slow" onclick="toggleMill('slow')">▶ 开始</button>
+      <button onclick="resetMill('slow')">↺ 重置</button>
+    </div>
     <div class="mill-desc">
-      <strong>现象：</strong>球被带到较低高度后即滑落，主要以<strong>滑动摩擦</strong>为主。<br>
-      <strong>问题：</strong>研磨介质（球）提升高度不够，冲击力小，粉碎效果差，物料仅靠摩擦力被研磨。<br>
-      <strong>结果：</strong>粉碎效率极低，耗时长，粒径分布不均匀。
+      <strong>现象：</strong>球被带到较低高度后即<strong>滑落</strong>，不会抛起砸下。<br>
+      <strong>原因：</strong>转速太低，离心力不足以将球带到高处，球主要以<strong>滑动方式</strong>沿壁面下滑。<br>
+      <strong>结果：</strong>仅有微弱的摩擦研磨，<strong>无冲击力</strong>，粉碎效率极低。
     </div>
   </div>
 
@@ -164,10 +191,14 @@
     </div>
     <canvas id="canvas-normal" width="300" height="300"></canvas>
     <div class="speed-label">转速: <span>75 rpm</span> | 临界转速: <span>100 rpm</span></div>
+    <div class="controls">
+      <button id="btn-normal" onclick="toggleMill('normal')">▶ 开始</button>
+      <button onclick="resetMill('normal')">↺ 重置</button>
+    </div>
     <div class="mill-desc">
-      <strong>现象：</strong>球被带到接近最高点后<strong>抛落</strong>，以冲击力为主，辅以摩擦力。<br>
-      <strong>优势：</strong>研磨介质在最高处落下，产生最大的冲击动能，对物料进行高效粉碎。<br>
-      <strong>结果：</strong>粉碎效率最高，粒径均匀，是球磨机的最佳工作转速。
+      <strong>现象：</strong>球被带到接近最高点后<strong>抛落砸下</strong>，以冲击力为主，辅以摩擦力。<br>
+      <strong>原因：</strong>转速适中，离心力刚好将球带到高处后重力占优，球脱离壁面<strong>砸落</strong>到底部。<br>
+      <strong>结果：</strong>冲击力 + 摩擦力双重作用，粉碎效率最高，粒径均匀。
     </div>
   </div>
 
@@ -179,10 +210,14 @@
     </div>
     <canvas id="canvas-fast" width="300" height="300"></canvas>
     <div class="speed-label">转速: <span>100+ rpm</span> | 临界转速: <span>100 rpm</span></div>
+    <div class="controls">
+      <button id="btn-fast" onclick="toggleMill('fast')">▶ 开始</button>
+      <button onclick="resetMill('fast')">↺ 重置</button>
+    </div>
     <div class="mill-desc">
-      <strong>现象：</strong>离心力过大，球紧贴筒壁随之旋转，<strong>不脱落、不抛落</strong>。<br>
-      <strong>问题：</strong>研磨介质与筒壁之间无相对运动，不产生冲击力和摩擦力，完全失去粉碎能力。<br>
-      <strong>结果：</strong>完全不研磨，浪费时间，设备磨损加大。
+      <strong>现象：</strong>球紧贴筒壁随之旋转，<strong>不脱落、不抛落、不砸下</strong>。<br>
+      <strong>原因：</strong>转速 ≥ 临界转速，离心力 ≥ 重力，球被牢牢压在筒壁上，惯性太大无法脱落。<br>
+      <strong>结果：</strong>球与壁面无相对运动，<strong>完全不研磨</strong>，设备空转。
     </div>
   </div>
 
@@ -194,7 +229,7 @@
     球磨机的临界转速（nc）是指球开始紧贴筒壁随筒体一起旋转而不脱落时的最小转速：<br><br>
     <code>nc = 42.3 / √D</code>  （rpm，转/分钟）<br><br>
     其中 <code>D</code> 为球磨机筒体直径（米）。<br>
-    实际工作转速通常取临界转速的 <strong>60%-85%</strong>，以保证研磨介质在接近最高点处抛落，获得最佳冲击粉碎效果。
+    实际工作转速通常取临界转速的 <strong>60%-85%</strong>，以保证研磨介质在接近最高点处抛落砸下，获得最佳冲击粉碎效果。
   </p>
 </div>
 
@@ -209,20 +244,23 @@ class BallMill {
     this.ctx = this.canvas.getContext('2d');
     this.config = config;
     this.angle = 0;
+    this.running = false;
     this.balls = [];
     this.initBalls();
+    this.draw(); // 初始绘制一帧
   }
 
   initBalls() {
     const cx = this.canvas.width / 2;
     const cy = this.canvas.height / 2;
     const r = this.canvas.width / 2 - 22;
-    const ballRadius = 10;
-    const count = 14;
+    const ballRadius = 9;
+    const count = 16;
+    this.balls = [];
     // 初始时球堆积在底部
     for (let i = 0; i < count; i++) {
-      const angle = Math.PI * 0.5 + (Math.random() - 0.5) * 1.2;
-      const dist = r * (0.2 + Math.random() * 0.5);
+      const angle = Math.PI * 0.5 + (Math.random() - 0.5) * 1.4;
+      const dist = r * (0.15 + Math.random() * 0.55);
       this.balls.push({
         x: cx + Math.cos(angle) * dist,
         y: cy + Math.sin(angle) * dist,
@@ -235,104 +273,80 @@ class BallMill {
     }
   }
 
+  start() {
+    this.running = true;
+  }
+
+  stop() {
+    this.running = false;
+  }
+
+  reset() {
+    this.running = false;
+    this.angle = 0;
+    this.initBalls();
+    this.draw();
+  }
+
   update() {
+    if (!this.running) return;
+
     const cx = this.canvas.width / 2;
     const cy = this.canvas.height / 2;
     const r = this.canvas.width / 2 - 22;
-    const gravity = 0.3;
-    const omega = this.config.omega; // 角速度
-    const mode = this.config.mode;    // 'slow' | 'normal' | 'fast'
-    const damping = 0.98;
+    const gravity = 0.35;
+    const omega = this.config.omega;
+    const mode = this.config.mode;
 
     for (let ball of this.balls) {
-      if (mode === 'fast') {
-        // 离心模式：球紧贴筒壁旋转
-        const dx = ball.x - cx;
-        const dy = ball.y - cy;
+      const dx = ball.x - cx;
+      const dy = ball.y - cy;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (ball.onWall) {
+        // 附壁阶段：随筒壁旋转
         let ballAngle = Math.atan2(dy, dx);
         ballAngle += omega;
         ball.x = cx + Math.cos(ballAngle) * r;
         ball.y = cy + Math.sin(ballAngle) * r;
-      } else if (mode === 'normal') {
-        // 正常模式：球被带到高处后抛落
-        const dx = ball.x - cx;
-        const dy = ball.y - cy;
-        const dist = Math.sqrt(dx * dx + dy * dy);
 
-        if (dist >= r - ball.radius - 1 && ball.onWall) {
-          // 附壁阶段：随筒壁旋转
-          let ballAngle = Math.atan2(dy, dx);
-          ballAngle += omega;
-          ball.x = cx + Math.cos(ballAngle) * r;
-          ball.y = cy + Math.sin(ballAngle) * r;
+        // 判断是否脱落
+        const normalizedAngle = ((ballAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
 
-          // 到达接近顶部时脱落抛落（约 70-85% 最高点位置）
-          const releaseAngle = ballAngle % (Math.PI * 2);
-          const normalizedAngle = releaseAngle < 0 ? releaseAngle + Math.PI * 2 : releaseAngle;
-          // 当球在第二象限上部时释放（角度约 1.3π - 1.8π）
-          if (normalizedAngle > Math.PI * 1.35 && normalizedAngle < Math.PI * 1.85) {
+        if (mode === 'slow') {
+          // 慢速：在较低位置就滑落（约 0.3π - 0.8π，即下半区）
+          if (normalizedAngle > Math.PI * 0.35 && normalizedAngle < Math.PI * 0.8) {
             ball.onWall = false;
+            ball.vx = -Math.sin(ballAngle) * omega * r * 0.4;
+            ball.vy = Math.cos(ballAngle) * omega * r * 0.4;
+          }
+        } else if (mode === 'normal') {
+          // 正常：在接近最高点处抛落（约 1.3π - 1.85π，即上半区上部）
+          if (normalizedAngle > Math.PI * 1.3 && normalizedAngle < Math.PI * 1.9) {
+            ball.onWall = false;
+            // 抛落时保留切向速度
             ball.vx = -Math.sin(ballAngle) * omega * r;
             ball.vy = Math.cos(ballAngle) * omega * r;
-            // 给一点向外的初速度
-            ball.vx += Math.cos(ballAngle) * 1.5;
-            ball.vy += Math.sin(ballAngle) * 1.5;
-          }
-        } else {
-          // 抛落阶段：自由落体
-          ball.vy += gravity;
-          ball.x += ball.vx;
-          ball.y += ball.vy;
-
-          // 碰壁检测
-          const newDx = ball.x - cx;
-          const newDy = ball.y - cy;
-          const newDist = Math.sqrt(newDx * newDx + newDy * newDy);
-          if (newDist >= r - ball.radius) {
-            // 碰到壁，吸附
-            ball.x = cx + (newDx / newDist) * (r - ball.radius);
-            ball.y = cy + (newDy / newDist) * (r - ball.radius);
-            ball.onWall = true;
-            ball.vx = 0;
-            ball.vy = 0;
           }
         }
-      } else if (mode === 'slow') {
-        // 慢速模式：球在底部滑动、翻滚
-        const dx = ball.x - cx;
-        const dy = ball.y - cy;
-        const dist = Math.sqrt(dx * dx + dy * dy);
+        // fast 模式：永不脱落
+      } else {
+        // 自由飞行阶段：抛落或滑落
+        ball.vy += gravity;
+        ball.x += ball.vx;
+        ball.y += ball.vy;
 
-        if (dist >= r - ball.radius - 1 && ball.onWall) {
-          // 附壁但很快滑落
-          let ballAngle = Math.atan2(dy, dx);
-          ballAngle += omega;
-          ball.x = cx + Math.cos(ballAngle) * r;
-          ball.y = cy + Math.sin(ballAngle) * r;
-
-          // 在较低位置就滑落（角度约 0.3π - 0.8π）
-          const releaseAngle = ballAngle % (Math.PI * 2);
-          const normalizedAngle = releaseAngle < 0 ? releaseAngle + Math.PI * 2 : releaseAngle;
-          if (normalizedAngle > Math.PI * 0.35 && normalizedAngle < Math.PI * 0.85) {
-            ball.onWall = false;
-            ball.vx = -Math.sin(ballAngle) * omega * r * 0.5;
-            ball.vy = Math.cos(ballAngle) * omega * r * 0.5;
-          }
-        } else {
-          ball.vy += gravity;
-          ball.x += ball.vx;
-          ball.y += ball.vy;
-
-          const newDx = ball.x - cx;
-          const newDy = ball.y - cy;
-          const newDist = Math.sqrt(newDx * newDx + newDy * newDy);
-          if (newDist >= r - ball.radius) {
-            ball.x = cx + (newDx / newDist) * (r - ball.radius);
-            ball.y = cy + (newDy / newDist) * (r - ball.radius);
-            ball.onWall = true;
-            ball.vx = 0;
-            ball.vy = 0;
-          }
+        // 碰壁检测
+        const newDx = ball.x - cx;
+        const newDy = ball.y - cy;
+        const newDist = Math.sqrt(newDx * newDx + newDy * newDy);
+        if (newDist >= r - ball.radius) {
+          // 碰到壁，吸附
+          ball.x = cx + (newDx / newDist) * (r - ball.radius);
+          ball.y = cy + (newDy / newDist) * (r - ball.radius);
+          ball.onWall = true;
+          ball.vx = 0;
+          ball.vy = 0;
         }
       }
     }
@@ -366,7 +380,7 @@ class BallMill {
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.fill();
 
-    // 筒体内壁纹路（旋转标记）
+    // 筒壁纹路（旋转标记，显示筒体在转）
     ctx.strokeStyle = '#1e3a5f';
     ctx.lineWidth = 2;
     for (let i = 0; i < 8; i++) {
@@ -392,7 +406,6 @@ class BallMill {
     const ballColors = ['#f87171', '#fbbf24', '#34d399', '#60a5fa', '#a78bfa', '#f472b6', '#fb923c', '#22d3ee'];
     for (let ball of this.balls) {
       const color = ballColors[ball.colorIdx % ballColors.length];
-      // 球体渐变
       const ballGrad = ctx.createRadialGradient(
         ball.x - 3, ball.y - 3, 1,
         ball.x, ball.y, ball.radius
@@ -417,7 +430,6 @@ class BallMill {
     ctx.beginPath();
     ctx.arc(cx, cy, r + 18, -Math.PI * 0.15, Math.PI * 0.15);
     ctx.stroke();
-    // 箭头尖
     const arrowAngle = Math.PI * 0.15;
     const arrowX = cx + Math.cos(arrowAngle) * (r + 18);
     const arrowY = cy + Math.sin(arrowAngle) * (r + 18);
@@ -432,10 +444,9 @@ class BallMill {
 
   lightenColor(hex, amount) {
     const num = parseInt(hex.slice(1), 16);
-    let r = (num >> 16) + amount;
-    let g = ((num >> 8) & 0x00FF) + amount;
-    let b = (num & 0x0000FF) + amount;
-    r = Math.min(255, r); g = Math.min(255, g); b = Math.min(255, b);
+    let r = Math.min(255, (num >> 16) + amount);
+    let g = Math.min(255, ((num >> 8) & 0x00FF) + amount);
+    let b = Math.min(255, (num & 0x0000FF) + amount);
     return `rgb(${r},${g},${b})`;
   }
 
@@ -449,18 +460,62 @@ class BallMill {
 }
 
 // 创建三个球磨机实例
-const millSlow = new BallMill('canvas-slow', { mode: 'slow', omega: 0.018 });
-const millNormal = new BallMill('canvas-normal', { mode: 'normal', omega: 0.04 });
-const millFast = new BallMill('canvas-fast', { mode: 'fast', omega: 0.07 });
+const mills = {
+  slow: new BallMill('canvas-slow', { mode: 'slow', omega: 0.016 }),
+  normal: new BallMill('canvas-normal', { mode: 'normal', omega: 0.04 }),
+  fast: new BallMill('canvas-fast', { mode: 'fast', omega: 0.07 }),
+};
+
+// 切换单个球磨机
+function toggleMill(name) {
+  const mill = mills[name];
+  const btn = document.getElementById('btn-' + name);
+  if (mill.running) {
+    mill.stop();
+    btn.textContent = '▶ 开始';
+    btn.classList.remove('active');
+  } else {
+    mill.start();
+    btn.textContent = '⏸ 暂停';
+    btn.classList.add('active');
+  }
+}
+
+// 重置单个
+function resetMill(name) {
+  const mill = mills[name];
+  mill.reset();
+  const btn = document.getElementById('btn-' + name);
+  btn.textContent = '▶ 开始';
+  btn.classList.remove('active');
+}
+
+// 对比播放：三个同时开始
+function startAll() {
+  for (const name of ['slow', 'normal', 'fast']) {
+    const mill = mills[name];
+    if (!mill.running) {
+      mill.start();
+      const btn = document.getElementById('btn-' + name);
+      btn.textContent = '⏸ 暂停';
+      btn.classList.add('active');
+    }
+  }
+}
+
+// 全部重置
+function resetAll() {
+  for (const name of ['slow', 'normal', 'fast']) {
+    resetMill(name);
+  }
+}
 
 // 动画循环
 function animate() {
-  millSlow.update();
-  millSlow.draw();
-  millNormal.update();
-  millNormal.draw();
-  millFast.update();
-  millFast.draw();
+  for (const name of ['slow', 'normal', 'fast']) {
+    mills[name].update();
+    mills[name].draw();
+  }
   requestAnimationFrame(animate);
 }
 animate();
