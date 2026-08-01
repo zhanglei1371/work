@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>外研版三上 · 全单元词汇挑战（含语音）</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(145deg, #f6e9d7 0%, #e3d5c0 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+        }
+        .container {
+            max-width: 550px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(4px);
+            border-radius: 40px;
+            padding: 20px 16px 28px;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.2);
+            border: 2px solid #fff;
+            text-align: center;
+        }
+        h1 { font-size: 22px; color: #4a3728; letter-spacing: 1px; margin-bottom: 2px; }
+        .sub { font-size: 13px; color: #7f6a58; border-bottom: 2px dashed #dac9b5; padding-bottom: 10px; margin-bottom: 14px; }
+
+        /* 单元按钮 - 自动换行 */
+        .unit-selector {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+        .unit-btn {
+            background: #f0e5d8;
+            border: 2px solid #dac9b5;
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-weight: 600;
+            color: #4a3728;
+            cursor: pointer;
+            font-size: 13px;
+            transition: 0.2s;
+            flex: 0 1 auto;
+        }
+        .unit-btn.active {
+            background: #4a3728;
+            border-color: #4a3728;
+            color: white;
+            box-shadow: 0 3px 0 #2b1f14;
+        }
+        .unit-btn:active { transform: translateY(2px); }
+
+        .score-area {
+            display: flex;
+            justify-content: space-between;
+            background: #4a3728;
+            padding: 7px 16px;
+            border-radius: 60px;
+            color: #f3e3d2;
+            font-weight: bold;
+            margin-bottom: 18px;
+            font-size: 14px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px 10px;
+            border-radius: 36px;
+            margin-bottom: 18px;
+            box-shadow: inset 0 -6px 0 #c6b3a0;
+            min-height: 90px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        .word-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #fcf6ef;
+            padding: 6px 20px 6px 28px;
+            border-radius: 60px;
+        }
+        .english-word {
+            font-size: 36px;
+            font-weight: 700;
+            color: #2d1f14;
+            letter-spacing: 1px;
+        }
+        .speak-btn {
+            background: #ffb74d;
+            border: none;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            font-size: 24px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 0 #f57c00;
+            transition: 0.1s ease;
+            color: #4a2e1a;
+            flex-shrink: 0;
+        }
+        .speak-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0px 0 #f57c00;
+        }
+        .hint {
+            margin-top: 8px;
+            font-size: 15px;
+            color: #a08772;
+            background: #efe3d8;
+            padding: 3px 20px;
+            border-radius: 30px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .option-btn {
+            background: white;
+            border: 3px solid #dac9b5;
+            padding: 12px 4px;
+            border-radius: 60px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #3a2a1e;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            box-shadow: 0 4px 0 #b8a18b;
+            text-align: center;
+            position: relative;
+        }
+        .option-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0px 0 #b8a18b;
+        }
+        .option-btn.correct {
+            background: #8bc34a;
+            border-color: #558b2f;
+            color: white;
+            box-shadow: 0 4px 0 #33691e;
+        }
+        .option-btn.wrong {
+            background: #ef5350;
+            border-color: #b71c1c;
+            color: white;
+            box-shadow: 0 4px 0 #7f0000;
+        }
+        .option-btn .speak-small {
+            font-size: 16px;
+            margin-left: 6px;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .feedback {
+            font-size: 22px;
+            min-height: 36px;
+            line-height: 36px;
+            margin-bottom: 8px;
+        }
+
+        .next-btn {
+            background: #ffb74d;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 60px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #4a2e1a;
+            border-bottom: 6px solid #f57c00;
+            cursor: pointer;
+            width: 100%;
+        }
+        .next-btn:active {
+            transform: translateY(4px);
+            border-bottom-width: 2px;
+        }
+        .restart {
+            margin-top: 12px;
+            background: none;
+            border: 1px solid #b8a18b;
+            padding: 6px 16px;
+            border-radius: 30px;
+            color: #5e4b3b;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .no-words { color: #b71c1c; padding: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+<div class="container" id="app">
+    <h1>📚 全单元词汇挑战</h1>
+    <div class="sub">外研版三上 · 含语音点读</div>
+
+    <!-- 单元选择 -->
+    <div class="unit-selector" id="unitSelector">
+        <button class="unit-btn" data-unit="Welcome">Welcome</button>
+        <button class="unit-btn" data-unit="Unit1">U1</button>
+        <button class="unit-btn" data-unit="Unit2">U2</button>
+        <button class="unit-btn" data-unit="Unit3">U3</button>
+        <button class="unit-btn" data-unit="Unit4">U4</button>
+        <button class="unit-btn" data-unit="Unit5">U5</button>
+        <button class="unit-btn" data-unit="Unit6">U6</button>
+        <button class="unit-btn" data-unit="Plays">🎭 Plays</button>
+    </div>
+
+    <div class="score-area">
+        <span>⭐ 得分 <span id="scoreDisplay">0</span></span>
+        <span>📌 <span id="counterDisplay">0/0</span></span>
+    </div>
+
+    <div class="card">
+        <div class="word-wrapper">
+            <span class="english-word" id="wordDisplay">选择单元</span>
+            <button class="speak-btn" id="speakBtn" title="点击发音">🔊</button>
+        </div>
+        <div class="hint" id="hintDisplay">点击上方单元开始挑战 👆</div>
+    </div>
+
+    <div class="options-grid" id="optionsContainer"></div>
+
+    <div class="feedback" id="feedbackDisplay">✨ 准备就绪</div>
+
+    <button class="next-btn" id="nextBtn" onclick="nextQuestion()" style="display:none;">下一题 ➜</button>
+    <button class="restart" onclick="restartGame()">🔄 重新挑战本单元</button>
+</div>
+
+<script>
+    // ======================== 完整词汇库（来自你提供的图片） ========================
+    const unitWords = {
+        'Welcome': [
+            { en: 'welcome', zh: '欢迎' },
+            { en: 'to', zh: '（用于动词、名词或形容词后，使意思完整）；向，到，往' },
+            { en: 'school', zh: '学校' },
+            { en: 'hi', zh: '嘿，喂，你好' },
+            { en: 'I', zh: '我' },
+            { en: 'be (am, is, are)', zh: '是' },
+            { en: 'what', zh: '什么' },
+            { en: 'your', zh: '你的；你们的' },
+            { en: 'name', zh: '名字' },
+            { en: 'hello', zh: '喂，哈啰，你好' },
+            { en: 'my', zh: '我的' },
+            { en: 'goodbye', zh: '再见' },
+            { en: 'have', zh: '有，拥有' },
+            { en: 'a (an)', zh: '一（个）' },
+            { en: 'nice', zh: '令人愉快的' },
+            { en: 'day', zh: '一天' },
+            { en: 'good', zh: '好的' },
+            { en: 'morning', zh: '早晨，上午' },
+            { en: 'Ms', zh: '女士' },
+            { en: 'stand', zh: '站立' },
+            { en: 'stand up', zh: '站起来' },
+            { en: 'sit', zh: '坐' },
+            { en: 'sit down', zh: '坐下' },
+            { en: 'open', zh: '打开' },
+            { en: 'book', zh: '书' },
+            { en: 'close', zh: '合上' },
+            { en: 'point', zh: '指' },
+            { en: 'say', zh: '说' },
+            { en: 'read', zh: '阅读' },
+            { en: 'listen', zh: '听' },
+            { en: 'write', zh: '写' }
+        ],
+        'Unit1': [
+            { en: "let's = let us", zh: '让我们' },
+            { en: 'friend', zh: '朋友' },
+            { en: 'meet', zh: '认识，结识' },
+            { en: 'you', zh: '你；你们' },
+            { en: 'play', zh: '玩，玩耍' },
+            { en: 'happy', zh: '高兴的，快乐的' },
+            { en: 'new', zh: '新的' },
+            { en: 'do', zh: '（构成疑问句或否定句）；做' },
+            { en: 'they', zh: '他们' },
+            { en: 'everyone', zh: '每个人，人人' },
+            { en: 'nine', zh: '九' },
+            { en: 'she', zh: '她' },
+            { en: 'too', zh: '也' },
+            { en: 'we', zh: '我们' },
+            { en: 'from', zh: '从' },
+            { en: 'the', zh: '（用于表示正在谈论一个已经提到过、已经知道，或是唯一存在的人或物）' },
+            { en: 'twin', zh: '双胞胎中的一个' },
+            { en: 'he', zh: '他' },
+            { en: 'come', zh: '来；来到' },
+            { en: 'and', zh: '然后，接着；和' },
+            { en: 'oh', zh: '噢' },
+            { en: 'no', zh: '不，不行' },
+            { en: 'help', zh: '帮助，帮忙' },
+            { en: 'here', zh: '在这里' },
+            { en: 'here you are', zh: '给你' },
+            { en: 'thank', zh: '感谢，向……表示感谢' },
+            { en: 'together', zh: '一起，一块儿' },
+            { en: 'OK', zh: '行，可以' },
+            { en: 'great', zh: '极棒的，极好的' },
+            { en: 'song', zh: '歌曲' },
+            { en: 'dear', zh: '亲爱的' },
+            { en: 'sing', zh: '唱，歌唱' },
+            { en: 'now', zh: '现在' },
+            { en: 'know', zh: '认识；知道，了解' },
+            { en: 'our', zh: '我们的' },
+            { en: 'everybody', zh: '每个人，人人' },
+            { en: 'with', zh: '和……一起' },
+            { en: 'me', zh: '我' }
+        ],
+        'Unit2': [
+            { en: 'thing', zh: '东西' },
+            { en: 'pack', zh: '收拾好' },
+            { en: 'pen', zh: '钢笔' },
+            { en: 'pencil', zh: '铅笔' },
+            { en: 'pencil case', zh: '笔袋；铅笔盒' },
+            { en: 'bag', zh: '袋；包' },
+            { en: 'for', zh: '为了' },
+            { en: 'ruler', zh: '尺子，直尺' },
+            { en: 'eraser', zh: '橡皮' },
+            { en: 'this', zh: '这，这个' },
+            { en: 'in', zh: '在……里' },
+            { en: 'schoolbag', zh: '书包' },
+            { en: 'it', zh: '它' },
+            { en: 'not', zh: '不，不是' },
+            { en: 'that', zh: '那，那个' },
+            { en: 'yes', zh: '是，对' },
+            { en: 'guess', zh: '猜，猜测' },
+            { en: 'find', zh: '发现，找到' },
+            { en: 'lost and found', zh: '失物招领' },
+            { en: 'bye', zh: '再见，拜拜' },
+            { en: 'kid', zh: '小孩，儿童' },
+            { en: 'take care of sb/sth', zh: '照看（照料）某人/某物' },
+            { en: 'there', zh: '在那里' },
+            { en: 'please', zh: '请' },
+            { en: 'back', zh: '回到原处' },
+            { en: 'come back', zh: '回来' },
+            { en: 'look', zh: '看，瞧，望' },
+            { en: 'look at sb/sth', zh: '看某人/某物' }
+        ],
+        'Unit3': [
+            { en: 'colourful', zh: '颜色鲜艳的，色彩丰富的' },
+            { en: 'world', zh: '世界' },
+            { en: 'hooray', zh: '好哇' },
+            { en: 'umbrella', zh: '伞；雨伞' },
+            { en: 'clothes', zh: '衣服' },
+            { en: 'red', zh: '红色（的）' },
+            { en: 'pink', zh: '粉红色（的）' },
+            { en: 'green', zh: '绿色（的）' },
+            { en: 'yellow', zh: '黄色（的）' },
+            { en: 'orange', zh: '橙色（的）' },
+            { en: 'blue', zh: '蓝色（的）' },
+            { en: 'purple', zh: '紫色（的）' },
+            { en: 'rainbow', zh: '彩虹' },
+            { en: 'want', zh: '想要' },
+            { en: 'balloon', zh: '气球' },
+            { en: 'colour', zh: '颜色' },
+            { en: 'can', zh: '能，会' },
+            { en: 'see', zh: '看见，看到' },
+            { en: 'right', zh: '正确的，对的' },
+            { en: 'first', zh: '第一的' },
+            { en: 'magical', zh: '神奇的；有魔力的' },
+            { en: 'fun', zh: '有趣的，逗乐的' },
+            { en: 'black', zh: '黑色（的）' },
+            { en: 'so', zh: '这么，如此' },
+            { en: 'many', zh: '许多；大量' },
+            { en: 'picture', zh: '画，图画' },
+            { en: 'today', zh: '今天' },
+            { en: 'paint', zh: '画，作画' }
+        ],
+        'Unit4': [
+            { en: 'number', zh: '数，数字' },
+            { en: 'count', zh: '数数' },
+            { en: 'how', zh: '多少；怎样，如何' },
+            { en: 'bird', zh: '鸟' },
+            { en: 'one', zh: '一' },
+            { en: 'two', zh: '二' },
+            { en: 'three', zh: '三' },
+            { en: 'four', zh: '四' },
+            { en: 'five', zh: '五' },
+            { en: 'six', zh: '六' },
+            { en: 'seven', zh: '七' },
+            { en: 'eight', zh: '八' },
+            { en: 'ten', zh: '十' },
+            { en: 'eleven', zh: '十一' },
+            { en: 'twelve', zh: '十二' },
+            { en: 'rope', zh: '绳' },
+            { en: 'who', zh: '谁，什么人' },
+            { en: 'make', zh: '制作' },
+            { en: 'Chinese knot', zh: '中国结' },
+            { en: 'beautiful', zh: '美丽的' },
+            { en: 'only', zh: '仅仅' },
+            { en: 'show', zh: '给……看' },
+            { en: 'baby', zh: '幼崽；雏鸟' },
+            { en: 'cheep', zh: '吱吱（或唧唧）的叫声' },
+            { en: 'egg', zh: '蛋' },
+            { en: 'hungry', zh: '饥饿的' },
+            { en: 'around', zh: '环绕，在（……）周围' },
+            { en: 'all', zh: '全部，所有' },
+            { en: 'all around', zh: '处处，到处' },
+            { en: 'big', zh: '大的' },
+            { en: 'little', zh: '小的' },
+            { en: 'everywhere', zh: '在各个地方；处处' }
+        ],
+        'Unit5': [
+            { en: 'family', zh: '家庭；家人' },
+            { en: 'dad (father)', zh: '爸爸' },
+            { en: 'mum (mother)', zh: '妈妈' },
+            { en: 'brother', zh: '哥哥；弟弟' },
+            { en: 'sister', zh: '姐姐；妹妹' },
+            { en: 'grandpa (grandfather)', zh: '祖父；外祖父' },
+            { en: 'grandma (grandmother)', zh: '祖母；外祖母' },
+            { en: 'but', zh: '但是，然而' },
+            { en: 'people', zh: '人；人们' },
+            { en: 'story', zh: '故事' },
+            { en: 'cap', zh: '帽子' },
+            { en: 'worry', zh: '担心' },
+            { en: 'on', zh: '在……上面' },
+            { en: 'come on', zh: '快点；加油' },
+            { en: 'photo', zh: '照片，相片' },
+            { en: 'love', zh: '爱，关爱' },
+            { en: 'daddy', zh: '爸爸' },
+            { en: 'mummy', zh: '妈妈' },
+            { en: 'where', zh: '在哪里' },
+            { en: 'dog', zh: '狗' },
+            { en: 'box', zh: '盒；箱' }
+        ],
+        'Unit6': [
+            { en: 'sweet', zh: '甜蜜的' },
+            { en: 'home', zh: '家' },
+            { en: 'game', zh: '游戏' },
+            { en: 'room', zh: '房间' },
+            { en: 'living room', zh: '客厅' },
+            { en: 'bedroom', zh: '卧室' },
+            { en: 'bathroom', zh: '浴室，卫生间' },
+            { en: 'kitchen', zh: '厨房' },
+            { en: 'dining room', zh: '餐厅' },
+            { en: 'door', zh: '门' },
+            { en: 'chair', zh: '椅子' },
+            { en: 'think', zh: '想，认为' },
+            { en: 'under', zh: '在……下面；在……底下' },
+            { en: 'bed', zh: '床' },
+            { en: 'toy', zh: '玩具' },
+            { en: 'miaow', zh: '咪，喵（猫叫声）' },
+            { en: 'table', zh: '桌子' },
+            { en: 'cat', zh: '猫' },
+            { en: 'ball', zh: '球' },
+            { en: 'their', zh: '他们的' },
+            { en: 'apple', zh: '苹果' },
+            { en: 'share', zh: '共用；分享' },
+            { en: 'put', zh: '放' },
+            { en: 'cooking', zh: '做饭' },
+            { en: 'sun', zh: '太阳' },
+            { en: 'like', zh: '喜欢' },
+            { en: 'run', zh: '跑' },
+            { en: 'lucky', zh: '幸运的' }
+        ],
+        'Plays': [
+            { en: 'mouse', zh: '老鼠' },
+            { en: 'deer', zh: '鹿' },
+            { en: 'rabbit', zh: '兔子' },
+            { en: 'hunter', zh: '猎人' },
+            { en: 'get', zh: '抓住' },
+            { en: 'after', zh: '在……后' },
+            { en: 'run after', zh: '追逐，追赶' },
+            { en: 'out', zh: '出去' },
+            { en: 'get out', zh: '逃出去' },
+            { en: 'each other', zh: '互相，彼此' },
+            { en: 'worried', zh: '担心的' },
+            { en: 'must', zh: '必须' },
+            { en: 'join', zh: '成为……的一员，加入' },
+            { en: 'army', zh: '军队' },
+            { en: 'need', zh: '需要' },
+            { en: 'idea', zh: '主意' },
+            { en: 'ready', zh: '准备好（做某事）的' },
+            { en: 'go', zh: '走，去' },
+            { en: 'country', zh: '国家' },
+            { en: 'well', zh: '嗯' },
+            { en: 'girl', zh: '女儿；女孩' },
+            { en: 'year', zh: '年' },
+            { en: 'soldier', zh: '士兵' },
+            { en: 'miss', zh: '思念，想念' },
+            { en: 'so much', zh: '非常' },
+            { en: 'wow', zh: '呀，哇' },
+            { en: 'Goldilocks', zh: '金发姑娘' },
+            { en: 'bear', zh: '熊' },
+            { en: 'house', zh: '房屋，房子' },
+            { en: 'next to', zh: '紧靠着' },
+            { en: 'window', zh: '窗户' },
+            { en: 'bowl', zh: '碗' },
+            { en: 'upstairs', zh: '楼上' },
+            { en: 'enter', zh: '进入' },
+            { en: 'wake up', zh: '醒来' },
+            { en: 'sorry', zh: '对不起，很抱歉' },
+            { en: 'again', zh: '又，再一次' }
+        ]
+    };
+
+    // ======================== 游戏状态 ========================
+    let currentUnit = 'Welcome';
+    let currentQuestions = [];
+    let currentIndex = 0;
+    let currentWord = null;
+    let score = 0;
+    let answered = false;
+
+    // DOM 元素
+    const wordDisplay = document.getElementById('wordDisplay');
+    const speakBtn = document.getElementById('speakBtn');
+    const hintDisplay = document.getElementById('hintDisplay');
+    const optionsContainer = document.getElementById('optionsContainer');
+    const feedbackDisplay = document.getElementById('feedbackDisplay');
+    const scoreDisplay = document.getElementById('scoreDisplay');
+    const counterDisplay = document.getElementById('counterDisplay');
+    const nextBtn = document.getElementById('nextBtn');
+    const unitBtns = document.querySelectorAll('.unit-btn');
+
+    // ======================== 辅助函数 ========================
+    function shuffleArray(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function getDistractors(correctZh, unit, count = 3) {
+        const allWords = unitWords[unit] || [];
+        const allZh = allWords.map(item => item.zh);
+        const candidates = allZh.filter(item => item !== correctZh);
+        const shuffled = shuffleArray([...candidates]);
+        return shuffled.slice(0, count);
+    }
+
+    // 语音朗读
+    function speakText(text) {
+        if (!window.speechSynthesis) {
+            alert('您的浏览器不支持语音合成，请使用 Chrome、Edge 或 Safari');
+            return;
+        }
+        // 取消任何正在进行的语音
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.9;
+        utterance.pitch = 1;
+        window.speechSynthesis.speak(utterance);
+    }
+
+    // ======================== 核心逻辑 ========================
+    function loadUnit(unit) {
+        currentUnit = unit;
+        // 激活按钮样式
+        unitBtns.forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.unit === unit);
+        });
+
+        const words = unitWords[unit];
+        if (!words || words.length === 0) {
+            wordDisplay.innerText = '⚠️ 无词汇';
+            hintDisplay.innerText = '请添加词汇或切换单元';
+            optionsContainer.innerHTML = '';
+            feedbackDisplay.innerHTML = '';
+            nextBtn.style.display = 'none';
+            counterDisplay.innerText = '0/0';
+            speakBtn.style.display = 'none';
+            return;
+        }
+        speakBtn.style.display = 'inline-flex';
+
+        // 重置得分和题目
+        score = 0;
+        scoreDisplay.innerText = '0';
+        currentQuestions = shuffleArray([...words]);
+        currentIndex = 0;
+        answered = false;
+        nextBtn.style.display = 'none';
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        if (currentIndex >= currentQuestions.length) {
+            wordDisplay.innerText = '🎉 完成啦！';
+            hintDisplay.innerText = '太棒了！点击"重新挑战"再来一次';
+            optionsContainer.innerHTML = '';
+            feedbackDisplay.innerHTML = '🏆 全部答对！继续加油！';
+            nextBtn.style.display = 'none';
+            counterDisplay.innerText = `${currentQuestions.length}/${currentQuestions.length}`;
+            speakBtn.style.display = 'none';
+            return;
+        }
+
+        const q = currentQuestions[currentIndex];
+        currentWord = q;
+        wordDisplay.innerText = q.en;
+        hintDisplay.innerText = '请选择正确的中文意思 👇';
+        feedbackDisplay.innerHTML = '🤔 选一个答案吧';
+        counterDisplay.innerText = `${currentIndex + 1}/${currentQuestions.length}`;
+        answered = false;
+        speakBtn.style.display = 'inline-flex';
+
+        // 生成选项
+        const correct = q.zh;
+        const distractors = getDistractors(correct, currentUnit, 3);
+        let options = [correct, ...distractors];
+        options = shuffleArray(options);
+
+        optionsContainer.innerHTML = '';
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.dataset.zh = opt;
+            btn.onclick = function() { selectOption(opt); };
+            optionsContainer.appendChild(btn);
+        });
+        nextBtn.style.display = 'none';
+    }
+
+    function selectOption(selectedZh) {
+        if (answered || !currentWord) return;
+
+        const buttons = document.querySelectorAll('.option-btn');
+        let correctBtn = null;
+        let selectedBtn = null;
+
+        buttons.forEach(btn => {
+            const zh = btn.dataset.zh;
+            if (zh === currentWord.zh) correctBtn = btn;
+            if (zh === selectedZh) selectedBtn = btn;
+        });
+
+        if (!correctBtn || !selectedBtn) return;
+
+        if (selectedZh === currentWord.zh) {
+            selectedBtn.classList.add('correct');
+            feedbackDisplay.innerHTML = '✅ 完全正确！太棒啦！ 🎉';
+            score += 10;
+            scoreDisplay.innerText = score;
+        } else {
+            selectedBtn.classList.add('wrong');
+            correctBtn.classList.add('correct');
+            feedbackDisplay.innerHTML = `❌ 再想想哦，正确答案是 “${currentWord.zh}”`;
+        }
+
+        buttons.forEach(btn => btn.style.pointerEvents = 'none');
+        answered = true;
+        nextBtn.style.display = 'block';
+    }
+
+    function nextQuestion() {
+        if (currentIndex < currentQuestions.length) {
+            currentIndex++;
+            loadQuestion();
+        }
+    }
+
+    function restartGame() {
+        loadUnit(currentUnit);
+    }
+
+    // ======================== 事件绑定 ========================
+    // 单元按钮
+    unitBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const unit = this.dataset.unit;
+            loadUnit(unit);
+        });
+    });
+
+    // 语音按钮
+    speakBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const word = wordDisplay.innerText;
+        if (word && !word.includes('🎉') && !word.includes('⚠️')) {
+            speakText(word);
+        }
+    });
+
+    // 默认加载 Welcome
+    window.onload = function() {
+        loadUnit('Welcome');
+    };
+</script>
+</body>
+</html>
