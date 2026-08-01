@@ -7,9 +7,8 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
-    background: #0f172a;
-    color: #e2e8f0;
+    font-family: "Microsoft YaHei", "PingFang SC", "SimSun", sans-serif;
+    background: #006699;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -17,336 +16,236 @@
     padding: 20px;
   }
   h1 {
-    font-size: 28px;
-    margin-bottom: 6px;
-    background: linear-gradient(135deg, #60a5fa, #a78bfa);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    font-size: 24px;
+    color: #fff;
+    margin-bottom: 16px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
   }
-  .subtitle {
-    font-size: 14px;
-    color: #94a3b8;
-    margin-bottom: 20px;
-  }
-  .container {
+  .btn-bar {
     display: flex;
-    gap: 24px;
+    gap: 12px;
+    margin-bottom: 20px;
     flex-wrap: wrap;
     justify-content: center;
-    max-width: 1200px;
-    width: 100%;
   }
-  .mill-card {
-    background: #1e293b;
-    border-radius: 14px;
-    padding: 20px;
-    width: 360px;
-    border: 1px solid #334155;
-    transition: border-color 0.3s;
-  }
-  .mill-card:hover { border-color: #475569; }
-  .mill-card h2 {
-    font-size: 18px;
-    margin-bottom: 4px;
-    text-align: center;
-  }
-  .status-badge {
-    display: inline-block;
-    padding: 3px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: bold;
-    margin-bottom: 12px;
-  }
-  .badge-slow { background: #7f1d1d; color: #fca5a5; }
-  .badge-normal { background: #14532d; color: #86efac; }
-  .badge-fast { background: #713f12; color: #fde047; }
-  canvas {
-    display: block;
-    margin: 0 auto;
+  .btn-bar button {
+    padding: 10px 28px;
+    border: 2px solid #fff;
     border-radius: 8px;
-    background: #0f172a;
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.2s;
+    min-width: 100px;
   }
-  .mill-desc {
-    margin-top: 14px;
-    font-size: 13px;
-    line-height: 1.7;
-    color: #cbd5e1;
+  .btn-bar button:hover {
+    background: rgba(255,255,255,0.3);
   }
-  .mill-desc strong { color: #f1f5f9; }
-  .formula-box {
+  .btn-bar button.active {
+    background: #fff;
+    color: #006699;
+  }
+  .stage {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .mill-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .mill-unit canvas {
+    background: #006699;
+    border-radius: 8px;
+  }
+  .mill-label {
+    margin-top: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+  }
+  .mill-label.slow { color: #ff9999; }
+  .mill-label.normal { color: #99ff99; }
+  .mill-label.fast { color: #ffdd44; }
+  .info-panel {
     margin-top: 20px;
-    background: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 12px;
-    padding: 18px 24px;
-    max-width: 1128px;
-    width: 100%;
-  }
-  .formula-box h3 {
-    font-size: 15px;
-    color: #a78bfa;
-    margin-bottom: 10px;
-  }
-  .formula-box p {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    padding: 16px 24px;
+    max-width: 800px;
+    color: #e0e0e0;
     font-size: 13px;
     line-height: 1.8;
-    color: #cbd5e1;
   }
-  .formula-box code {
-    background: #334155;
+  .info-panel h3 { color: #fff; margin-bottom: 8px; }
+  .info-panel code {
+    background: rgba(255,255,255,0.15);
     padding: 2px 8px;
     border-radius: 4px;
-    color: #f0abfc;
-    font-size: 13px;
+    color: #ffdd44;
   }
-  .controls {
-    margin-top: 16px;
-    text-align: center;
-  }
-  .controls button {
-    padding: 6px 16px;
-    margin: 0 4px;
-    border: 1px solid #475569;
-    border-radius: 8px;
-    background: #334155;
-    color: #e2e8f0;
-    cursor: pointer;
-    font-size: 13px;
-    transition: all 0.2s;
-  }
-  .controls button:hover { background: #475569; border-color: #64748b; }
-  .controls button.active { background: #3b82f6; border-color: #60a5fa; }
-  .global-controls {
-    margin: 20px 0;
-    text-align: center;
-  }
-  .global-controls button {
-    padding: 10px 28px;
-    margin: 0 8px;
-    border: 1px solid #475569;
-    border-radius: 10px;
-    background: #334155;
-    color: #e2e8f0;
-    cursor: pointer;
-    font-size: 15px;
-    font-weight: bold;
-    transition: all 0.2s;
-  }
-  .global-controls button:hover { background: #475569; border-color: #64748b; }
-  .global-controls button.start-all { background: #1e3a5f; border-color: #3b82f6; }
-  .global-controls button.start-all:hover { background: #2563eb; }
-  .global-controls button.reset-all { background: #3f1d1d; border-color: #ef4444; }
-  .global-controls button.reset-all:hover { background: #dc2626; }
-  .speed-label {
-    text-align: center;
-    margin-top: 8px;
-    font-size: 13px;
-    color: #94a3b8;
-  }
-  .speed-label span { color: #60a5fa; font-weight: bold; }
-  footer {
-    margin-top: 20px;
-    font-size: 12px;
-    color: #475569;
-  }
+  footer { margin-top: 16px; font-size: 12px; color: rgba(255,255,255,0.4); }
 </style>
 </head>
 <body>
 
 <h1>球磨机转速演示</h1>
-<p class="subtitle">药剂学 · 粉碎设备 · 转速对研磨效果的影响</p>
 
-<div class="global-controls">
-  <button class="start-all" onclick="startAll()">▶ 对比播放（三个同时开始）</button>
-  <button class="reset-all" onclick="resetAll()">↺ 全部重置</button>
+<div class="btn-bar">
+  <button id="btn-slow" onclick="setMode('slow')">过慢</button>
+  <button id="btn-normal" onclick="setMode('normal')">适当</button>
+  <button id="btn-fast" onclick="setMode('fast')">过快</button>
+  <button id="btn-compare" onclick="setMode('compare')">对比</button>
 </div>
 
-<div class="container">
-
-  <!-- 转速过慢 -->
-  <div class="mill-card">
-    <h2>转速过慢</h2>
-    <div style="text-align:center;">
-      <span class="status-badge badge-slow">❌ 研磨效率低</span>
-    </div>
-    <canvas id="canvas-slow" width="300" height="300"></canvas>
-    <div class="speed-label">转速: <span>30 rpm</span> | 临界转速: <span>100 rpm</span></div>
-    <div class="controls">
-      <button id="btn-slow" onclick="toggleMill('slow')">▶ 开始</button>
-      <button onclick="resetMill('slow')">↺ 重置</button>
-    </div>
-    <div class="mill-desc">
-      <strong>现象：</strong>球被带到较低高度后即<strong>滑落</strong>，不会抛起砸下。<br>
-      <strong>原因：</strong>转速太低，离心力不足以将球带到高处，球主要以<strong>滑动方式</strong>沿壁面下滑。<br>
-      <strong>结果：</strong>仅有微弱的摩擦研磨，<strong>无冲击力</strong>，粉碎效率极低。
-    </div>
-  </div>
-
-  <!-- 转速正常 -->
-  <div class="mill-card">
-    <h2>转速正常（临界转速的 60%-85%）</h2>
-    <div style="text-align:center;">
-      <span class="status-badge badge-normal">✅ 研磨效率最佳</span>
-    </div>
-    <canvas id="canvas-normal" width="300" height="300"></canvas>
-    <div class="speed-label">转速: <span>75 rpm</span> | 临界转速: <span>100 rpm</span></div>
-    <div class="controls">
-      <button id="btn-normal" onclick="toggleMill('normal')">▶ 开始</button>
-      <button onclick="resetMill('normal')">↺ 重置</button>
-    </div>
-    <div class="mill-desc">
-      <strong>现象：</strong>球被带到接近最高点后<strong>抛落砸下</strong>，以冲击力为主，辅以摩擦力。<br>
-      <strong>原因：</strong>转速适中，离心力刚好将球带到高处后重力占优，球脱离壁面<strong>砸落</strong>到底部。<br>
-      <strong>结果：</strong>冲击力 + 摩擦力双重作用，粉碎效率最高，粒径均匀。
-    </div>
-  </div>
-
-  <!-- 转速过快 -->
-  <div class="mill-card">
-    <h2>转速过快（≥临界转速）</h2>
-    <div style="text-align:center;">
-      <span class="status-badge badge-yellow">❌ 离心附着，无法研磨</span>
-    </div>
-    <canvas id="canvas-fast" width="300" height="300"></canvas>
-    <div class="speed-label">转速: <span>100+ rpm</span> | 临界转速: <span>100 rpm</span></div>
-    <div class="controls">
-      <button id="btn-fast" onclick="toggleMill('fast')">▶ 开始</button>
-      <button onclick="resetMill('fast')">↺ 重置</button>
-    </div>
-    <div class="mill-desc">
-      <strong>现象：</strong>球紧贴筒壁随之旋转，<strong>不脱落、不抛落、不砸下</strong>。<br>
-      <strong>原因：</strong>转速 ≥ 临界转速，离心力 ≥ 重力，球被牢牢压在筒壁上，惯性太大无法脱落。<br>
-      <strong>结果：</strong>球与壁面无相对运动，<strong>完全不研磨</strong>，设备空转。
-    </div>
-  </div>
-
+<div class="stage" id="stage">
+  <!-- Canvas(s) will be created dynamically -->
 </div>
 
-<div class="formula-box">
+<div class="info-panel">
   <h3>临界转速公式</h3>
-  <p>
-    球磨机的临界转速（nc）是指球开始紧贴筒壁随筒体一起旋转而不脱落时的最小转速：<br><br>
-    <code>nc = 42.3 / √D</code>  （rpm，转/分钟）<br><br>
-    其中 <code>D</code> 为球磨机筒体直径（米）。<br>
-    实际工作转速通常取临界转速的 <strong>60%-85%</strong>，以保证研磨介质在接近最高点处抛落砸下，获得最佳冲击粉碎效果。
-  </p>
+  <code>nc = 42.3 / √D</code> （rpm，D为筒体直径，单位米）<br>
+  实际工作转速取临界转速的 60%-85%，球在接近最高点处抛落砸下，粉碎效率最高。
+  <br>过慢：球滑落，无冲击力。过快：球紧贴筒壁，完全离心不研磨。
 </div>
 
 <footer>药剂学教学演示 · 球磨机粉碎原理</footer>
 
 <script>
-// ===== 球磨机 Canvas 动画 =====
+// ===== 球磨机动画引擎 =====
 
 class BallMill {
-  constructor(canvasId, config) {
-    this.canvas = document.getElementById(canvasId);
-    this.ctx = this.canvas.getContext('2d');
-    this.config = config;
+  constructor(canvas, mode) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+    this.w = canvas.width;
+    this.h = canvas.height;
+    this.cx = this.w / 2;
+    this.cy = this.h / 2;
+    this.r = Math.min(this.w, this.h) / 2 - 20;
+    this.mode = mode;  // 'slow' | 'normal' | 'fast'
     this.angle = 0;
-    this.running = false;
     this.balls = [];
     this.initBalls();
-    this.draw(); // 初始绘制一帧
   }
 
   initBalls() {
-    const cx = this.canvas.width / 2;
-    const cy = this.canvas.height / 2;
-    const r = this.canvas.width / 2 - 22;
-    const ballRadius = 9;
-    const count = 16;
-    this.balls = [];
-    // 初始时球堆积在底部
+    const count = 12;
+    const ballR = 7;
+    const colors = [
+      '#ff6666', '#ffaa44', '#44ff44', '#4488ff',
+      '#aa44ff', '#ff44aa', '#44dddd', '#ff8844',
+      '#88ff44', '#4488ff', '#ff44ff', '#ffff44'
+    ];
+    // 初始：球堆积在底部
     for (let i = 0; i < count; i++) {
-      const angle = Math.PI * 0.5 + (Math.random() - 0.5) * 1.4;
-      const dist = r * (0.15 + Math.random() * 0.55);
+      const angle = Math.PI / 2 + (Math.random() - 0.5) * 1.5;
+      const dist = this.r * (0.1 + Math.random() * 0.6);
       this.balls.push({
-        x: cx + Math.cos(angle) * dist,
-        y: cy + Math.sin(angle) * dist,
-        vx: 0,
-        vy: 0,
-        radius: ballRadius,
+        x: this.cx + Math.cos(angle) * dist,
+        y: this.cy + Math.sin(angle) * dist,
+        vx: 0, vy: 0,
+        radius: ballR,
         onWall: false,
-        colorIdx: i,
+        wallAngle: 0,
+        color: colors[i % colors.length],
       });
     }
   }
 
-  start() {
-    this.running = true;
-  }
-
-  stop() {
-    this.running = false;
-  }
-
-  reset() {
-    this.running = false;
-    this.angle = 0;
-    this.initBalls();
-    this.draw();
-  }
-
   update() {
-    if (!this.running) return;
-
-    const cx = this.canvas.width / 2;
-    const cy = this.canvas.height / 2;
-    const r = this.canvas.width / 2 - 22;
-    const gravity = 0.35;
-    const omega = this.config.omega;
-    const mode = this.config.mode;
+    const omega = this.getOmega();
+    const gravity = 0.4;
+    const damping = 0.96;
 
     for (let ball of this.balls) {
-      const dx = ball.x - cx;
-      const dy = ball.y - cy;
+      const dx = ball.x - this.cx;
+      const dy = ball.y - this.cy;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
       if (ball.onWall) {
         // 附壁阶段：随筒壁旋转
-        let ballAngle = Math.atan2(dy, dx);
-        ballAngle += omega;
-        ball.x = cx + Math.cos(ballAngle) * r;
-        ball.y = cy + Math.sin(ballAngle) * r;
+        ball.wallAngle += omega;
+        ball.x = this.cx + Math.cos(ball.wallAngle) * (this.r - ball.radius);
+        ball.y = this.cy + Math.sin(ball.wallAngle) * (this.r - ball.radius);
 
-        // 判断是否脱落
-        const normalizedAngle = ((ballAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+        // 判断脱落条件
+        const a = ((ball.wallAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
 
-        if (mode === 'slow') {
-          // 慢速：在较低位置就滑落（约 0.3π - 0.8π，即下半区）
-          if (normalizedAngle > Math.PI * 0.35 && normalizedAngle < Math.PI * 0.8) {
+        if (this.mode === 'slow') {
+          // 过慢：在较低位置滑落（角度 0.3π~0.75π，即右下到左下）
+          if (a > Math.PI * 0.3 && a < Math.PI * 0.75) {
             ball.onWall = false;
-            ball.vx = -Math.sin(ballAngle) * omega * r * 0.4;
-            ball.vy = Math.cos(ballAngle) * omega * r * 0.4;
+            // 沿壁面切向滑落，速度很小
+            ball.vx = -Math.sin(ball.wallAngle) * omega * this.r * 0.3;
+            ball.vy = Math.cos(ball.wallAngle) * omega * this.r * 0.3;
           }
-        } else if (mode === 'normal') {
-          // 正常：在接近最高点处抛落（约 1.3π - 1.85π，即上半区上部）
-          if (normalizedAngle > Math.PI * 1.3 && normalizedAngle < Math.PI * 1.9) {
+        } else if (this.mode === 'normal') {
+          // 适当：在接近最高点处抛落（角度 1.3π~1.9π，即左上到右上上方）
+          if (a > Math.PI * 1.3 && a < Math.PI * 1.9) {
             ball.onWall = false;
-            // 抛落时保留切向速度
-            ball.vx = -Math.sin(ballAngle) * omega * r;
-            ball.vy = Math.cos(ballAngle) * omega * r;
+            // 保留切向速度 + 重力 → 抛物线砸下
+            ball.vx = -Math.sin(ball.wallAngle) * omega * this.r;
+            ball.vy = Math.cos(ball.wallAngle) * omega * this.r;
           }
         }
         // fast 模式：永不脱落
       } else {
-        // 自由飞行阶段：抛落或滑落
+        // 自由飞行：重力 + 速度
         ball.vy += gravity;
+        ball.vx *= damping;
         ball.x += ball.vx;
         ball.y += ball.vy;
 
         // 碰壁检测
-        const newDx = ball.x - cx;
-        const newDy = ball.y - cy;
-        const newDist = Math.sqrt(newDx * newDx + newDy * newDy);
-        if (newDist >= r - ball.radius) {
-          // 碰到壁，吸附
-          ball.x = cx + (newDx / newDist) * (r - ball.radius);
-          ball.y = cy + (newDy / newDist) * (r - ball.radius);
+        const ndx = ball.x - this.cx;
+        const ndy = ball.y - this.cy;
+        const ndist = Math.sqrt(ndx * ndx + ndy * ndy);
+        if (ndist >= this.r - ball.radius) {
+          // 碰到壁面，吸附
+          ball.x = this.cx + (ndx / ndist) * (this.r - ball.radius);
+          ball.y = this.cy + (ndy / ndist) * (this.r - ball.radius);
           ball.onWall = true;
+          ball.wallAngle = Math.atan2(ndy, ndx);
           ball.vx = 0;
           ball.vy = 0;
+        }
+
+        // 球与球之间碰撞（简化处理）
+      }
+    }
+
+    // 球间碰撞
+    for (let i = 0; i < this.balls.length; i++) {
+      for (let j = i + 1; j < this.balls.length; j++) {
+        const b1 = this.balls[i];
+        const b2 = this.balls[j];
+        const ddx = b2.x - b1.x;
+        const ddy = b2.y - b1.y;
+        const dd = Math.sqrt(ddx * ddx + ddy * ddy);
+        const minDist = b1.radius + b2.radius;
+        if (dd < minDist && dd > 0.1) {
+          const overlap = (minDist - dd) / 2;
+          const nx = ddx / dd;
+          const ny = ddy / dd;
+          b1.x -= nx * overlap;
+          b1.y -= ny * overlap;
+          b2.x += nx * overlap;
+          b2.y += ny * overlap;
+          // 简单弹性碰撞
+          if (!b1.onWall && !b2.onWall) {
+            const tmpvx = b1.vx, tmpvy = b1.vy;
+            b1.vx = b2.vx * 0.5;
+            b1.vy = b2.vy * 0.5;
+            b2.vx = tmpvx * 0.5;
+            b2.vy = tmpvy * 0.5;
+          }
         }
       }
     }
@@ -354,167 +253,173 @@ class BallMill {
     this.angle += omega;
   }
 
+  getOmega() {
+    if (this.mode === 'slow') return 0.015;
+    if (this.mode === 'normal') return 0.04;
+    if (this.mode === 'fast') return 0.08;
+    return 0.04;
+  }
+
   draw() {
     const ctx = this.ctx;
-    const w = this.canvas.width;
-    const h = this.canvas.height;
-    const cx = w / 2;
-    const cy = h / 2;
-    const r = w / 2 - 22;
+    ctx.clearRect(0, 0, this.w, this.h);
 
-    ctx.clearRect(0, 0, w, h);
-
-    // 筒体外圆（金属质感）
-    const grad = ctx.createRadialGradient(cx - 20, cy - 20, 10, cx, cy, r + 14);
-    grad.addColorStop(0, '#475569');
-    grad.addColorStop(0.5, '#334155');
-    grad.addColorStop(1, '#1e293b');
+    // 筒体外壳（金属质感）
+    const grad = ctx.createRadialGradient(
+      this.cx - 15, this.cy - 15, 5,
+      this.cx, this.cy, this.r + 12
+    );
+    grad.addColorStop(0, '#6688aa');
+    grad.addColorStop(0.5, '#446688');
+    grad.addColorStop(1, '#224466');
     ctx.fillStyle = grad;
     ctx.beginPath();
-    ctx.arc(cx, cy, r + 14, 0, Math.PI * 2);
+    ctx.arc(this.cx, this.cy, this.r + 12, 0, Math.PI * 2);
     ctx.fill();
 
     // 筒体内壁
-    ctx.fillStyle = '#0f172a';
+    ctx.fillStyle = '#003355';
     ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.arc(this.cx, this.cy, this.r, 0, Math.PI * 2);
     ctx.fill();
 
-    // 筒壁纹路（旋转标记，显示筒体在转）
-    ctx.strokeStyle = '#1e3a5f';
+    // 筒壁旋转标记（8条线）
+    ctx.strokeStyle = '#5577aa';
     ctx.lineWidth = 2;
     for (let i = 0; i < 8; i++) {
       const a = this.angle + (i * Math.PI / 4);
       ctx.beginPath();
-      ctx.moveTo(cx + Math.cos(a) * (r - 8), cy + Math.sin(a) * (r - 8));
-      ctx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+      ctx.moveTo(this.cx + Math.cos(a) * (this.r - 6), this.cy + Math.sin(a) * (this.r - 6));
+      ctx.lineTo(this.cx + Math.cos(a) * this.r, this.cy + Math.sin(a) * this.r);
       ctx.stroke();
     }
 
     // 中心轴
-    ctx.fillStyle = '#64748b';
+    ctx.fillStyle = '#aabbcc';
     ctx.beginPath();
-    ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+    ctx.arc(this.cx, this.cy, 5, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = '#94a3b8';
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = '#8899aa';
+    ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+    ctx.arc(this.cx, this.cy, 5, 0, Math.PI * 2);
     ctx.stroke();
 
     // 球
-    const ballColors = ['#f87171', '#fbbf24', '#34d399', '#60a5fa', '#a78bfa', '#f472b6', '#fb923c', '#22d3ee'];
     for (let ball of this.balls) {
-      const color = ballColors[ball.colorIdx % ballColors.length];
-      const ballGrad = ctx.createRadialGradient(
-        ball.x - 3, ball.y - 3, 1,
+      const bg = ctx.createRadialGradient(
+        ball.x - 2, ball.y - 2, 0.5,
         ball.x, ball.y, ball.radius
       );
-      ballGrad.addColorStop(0, this.lightenColor(color, 40));
-      ballGrad.addColorStop(0.7, color);
-      ballGrad.addColorStop(1, this.darkenColor(color, 30));
-      ctx.fillStyle = ballGrad;
+      bg.addColorStop(0, this.lighten(ball.color, 60));
+      bg.addColorStop(0.7, ball.color);
+      bg.addColorStop(1, this.darken(ball.color, 40));
+      ctx.fillStyle = bg;
       ctx.beginPath();
       ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
       ctx.fill();
       // 高光
-      ctx.fillStyle = 'rgba(255,255,255,0.3)';
+      ctx.fillStyle = 'rgba(255,255,255,0.35)';
       ctx.beginPath();
-      ctx.arc(ball.x - 3, ball.y - 3, ball.radius * 0.3, 0, Math.PI * 2);
+      ctx.arc(ball.x - 2, ball.y - 2, ball.radius * 0.3, 0, Math.PI * 2);
       ctx.fill();
     }
 
     // 旋转方向箭头
-    ctx.strokeStyle = '#64748b';
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.arc(cx, cy, r + 18, -Math.PI * 0.15, Math.PI * 0.15);
+    ctx.arc(this.cx, this.cy, this.r + 16, -0.3, 0.3);
     ctx.stroke();
-    const arrowAngle = Math.PI * 0.15;
-    const arrowX = cx + Math.cos(arrowAngle) * (r + 18);
-    const arrowY = cy + Math.sin(arrowAngle) * (r + 18);
-    ctx.fillStyle = '#64748b';
+    const ax = this.cx + Math.cos(0.3) * (this.r + 16);
+    const ay = this.cy + Math.sin(0.3) * (this.r + 16);
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
     ctx.beginPath();
-    ctx.moveTo(arrowX, arrowY);
-    ctx.lineTo(arrowX - 5, arrowY - 8);
-    ctx.lineTo(arrowX + 3, arrowY - 5);
+    ctx.moveTo(ax, ay);
+    ctx.lineTo(ax - 4, ay - 7);
+    ctx.lineTo(ax + 3, ay - 4);
     ctx.closePath();
     ctx.fill();
   }
 
-  lightenColor(hex, amount) {
-    const num = parseInt(hex.slice(1), 16);
-    let r = Math.min(255, (num >> 16) + amount);
-    let g = Math.min(255, ((num >> 8) & 0x00FF) + amount);
-    let b = Math.min(255, (num & 0x0000FF) + amount);
-    return `rgb(${r},${g},${b})`;
+  lighten(hex, amt) {
+    const n = parseInt(hex.slice(1), 16);
+    return `rgb(${Math.min(255,(n>>16)+amt)},${Math.min(255,((n>>8)&255)+amt)},${Math.min(255,(n&255)+amt)})`;
   }
-
-  darkenColor(hex, amount) {
-    const num = parseInt(hex.slice(1), 16);
-    let r = Math.max(0, (num >> 16) - amount);
-    let g = Math.max(0, ((num >> 8) & 0x00FF) - amount);
-    let b = Math.max(0, (num & 0x0000FF) - amount);
-    return `rgb(${r},${g},${b})`;
+  darken(hex, amt) {
+    const n = parseInt(hex.slice(1), 16);
+    return `rgb(${Math.max(0,(n>>16)-amt)},${Math.max(0,((n>>8)&255)-amt)},${Math.max(0,(n&255)-amt)})`;
   }
 }
 
-// 创建三个球磨机实例
-const mills = {
-  slow: new BallMill('canvas-slow', { mode: 'slow', omega: 0.016 }),
-  normal: new BallMill('canvas-normal', { mode: 'normal', omega: 0.04 }),
-  fast: new BallMill('canvas-fast', { mode: 'fast', omega: 0.07 }),
-};
+// ===== 模式管理 =====
+let currentMode = 'normal';
+let mills = [];
 
-// 切换单个球磨机
-function toggleMill(name) {
-  const mill = mills[name];
-  const btn = document.getElementById('btn-' + name);
-  if (mill.running) {
-    mill.stop();
-    btn.textContent = '▶ 开始';
-    btn.classList.remove('active');
-  } else {
-    mill.start();
-    btn.textContent = '⏸ 暂停';
-    btn.classList.add('active');
-  }
-}
+function setupStage(mode) {
+  const stage = document.getElementById('stage');
+  stage.innerHTML = '';
+  mills = [];
 
-// 重置单个
-function resetMill(name) {
-  const mill = mills[name];
-  mill.reset();
-  const btn = document.getElementById('btn-' + name);
-  btn.textContent = '▶ 开始';
-  btn.classList.remove('active');
-}
+  const sizes = {
+    slow:    { w: 360, h: 320, label: '过慢', labelClass: 'slow' },
+    normal:  { w: 360, h: 320, label: '适当', labelClass: 'normal' },
+    fast:    { w: 360, h: 320, label: '过快', labelClass: 'fast' },
+  };
 
-// 对比播放：三个同时开始
-function startAll() {
-  for (const name of ['slow', 'normal', 'fast']) {
-    const mill = mills[name];
-    if (!mill.running) {
-      mill.start();
-      const btn = document.getElementById('btn-' + name);
-      btn.textContent = '⏸ 暂停';
-      btn.classList.add('active');
+  if (mode === 'compare') {
+    // 对比模式：三个并排
+    for (const m of ['slow', 'normal', 'fast']) {
+      const s = sizes[m];
+      const unit = document.createElement('div');
+      unit.className = 'mill-unit';
+      const canvas = document.createElement('canvas');
+      canvas.width = s.w;
+      canvas.height = s.h;
+      const label = document.createElement('div');
+      label.className = 'mill-label ' + s.labelClass;
+      label.textContent = s.label;
+      unit.appendChild(canvas);
+      unit.appendChild(label);
+      stage.appendChild(unit);
+      mills.push(new BallMill(canvas, m));
     }
+  } else {
+    // 单个模式
+    const s = sizes[mode];
+    const unit = document.createElement('div');
+    unit.className = 'mill-unit';
+    const canvas = document.createElement('canvas');
+    canvas.width = s.w;
+    canvas.height = s.h;
+    const label = document.createElement('div');
+    label.className = 'mill-label ' + s.labelClass;
+    label.textContent = s.label;
+    unit.appendChild(canvas);
+    unit.appendChild(label);
+    stage.appendChild(unit);
+    mills.push(new BallMill(canvas, mode));
   }
+
+  // 更新按钮状态
+  document.querySelectorAll('.btn-bar button').forEach(btn => btn.classList.remove('active'));
+  const btnMap = { slow: 'btn-slow', normal: 'btn-normal', fast: 'btn-fast', compare: 'btn-compare' };
+  document.getElementById(btnMap[mode]).classList.add('active');
 }
 
-// 全部重置
-function resetAll() {
-  for (const name of ['slow', 'normal', 'fast']) {
-    resetMill(name);
-  }
+function setMode(mode) {
+  currentMode = mode;
+  setupStage(mode);
 }
+
+// 初始
+setMode('normal');
 
 // 动画循环
 function animate() {
-  for (const name of ['slow', 'normal', 'fast']) {
-    mills[name].update();
-    mills[name].draw();
+  for (let mill of mills) {
+    mill.update();
+    mill.draw();
   }
   requestAnimationFrame(animate);
 }
