@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PK Analyzer Pro · 药动学专业分析工具</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;background:#f0f4f8;color:#1a1a2e;padding:16px}
+.container{max-width:1550px;margin:0 auto}
+.header{background:linear-gradient(135deg,#0f4c81,#1a7a5c);border-radius:14px;padding:20px 28px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;box-shadow:0 8px 32px rgba(15,76,129,0.25)}
+.header h1{font-size:20px;font-weight:700;color:#fff;display:flex;align-items:center;gap:10px}
+.header h1 small{font-weight:400;font-size:12px;opacity:.8;display:block;margin-top:2px}
+.header-badge{background:rgba(255,255,255,.15);padding:4px 12px;border-radius:20px;color:#fff;font-size:11px;border:1px solid rgba(255,255,255,.2)}
+.grid{display:grid;grid-template-columns:380px 1fr;gap:16px}
+@media(max-width:960px){.grid{grid-template-columns:1fr}}
+.card{background:#fff;border-radius:10px;padding:16px 18px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.04);border:1px solid #e2e8f0}
+.card-title{font-size:13px;font-weight:700;color:#0f4c81;margin-bottom:10px;display:flex;align-items:center;gap:6px;padding-bottom:6px;border-bottom:2px solid #e2e8f0;flex-wrap:wrap}
+.form-row{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.form-group{flex:1;min-width:90px}
+.form-group label{display:block;font-size:11px;font-weight:600;color:#555;margin-bottom:2px}
+.form-group input,.form-group select{width:100%;padding:6px 8px;border:1.5px solid #dde1e7;border-radius:6px;font-size:12px;background:#fafbfc;outline:none}
+.form-group input:focus,.form-group select:focus{border-color:#0f4c81;background:#fff}
+.data-table-wrap{max-height:240px;overflow-y:auto;margin-bottom:6px}
+.data-table{width:100%;border-collapse:collapse;font-size:12px}
+.data-table th{background:#f8fafc;padding:5px 6px;text-align:left;font-weight:600;font-size:11px;color:#555;border-bottom:2px solid #e2e8f0;position:sticky;top:0}
+.data-table td{padding:3px 5px;border-bottom:1px solid #f0f2f5}
+.data-table td input{width:100%;padding:4px 6px;border:1px solid #e2e8f0;border-radius:4px;font-size:12px;outline:none}
+.data-table td input:focus{border-color:#0f4c81}
+.data-table .del-btn{background:none;border:none;color:#e74c3c;cursor:pointer;font-size:14px;padding:0 3px;border-radius:3px}
+.data-table .del-btn:hover{background:#fdf0ef}
+.data-table .outlier{background:#fff0f0!important}
+.data-table .outlier input{background:#fff0f0;border-color:#e74c3c}
+.data-actions{display:flex;gap:4px;flex-wrap:wrap}
+.data-actions button,.btn{padding:5px 12px;border:1.5px solid #dde1e7;border-radius:6px;background:#fff;font-size:11px;cursor:pointer;color:#555;transition:all .2s;display:flex;align-items:center;gap:3px}
+.data-actions button:hover,.btn:hover{border-color:#0f4c81;color:#0f4c81}
+.btn-primary{background:linear-gradient(135deg,#0f4c81,#1a7a5c);color:#fff;border:none;padding:8px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .3s;box-shadow:0 4px 14px rgba(15,76,129,.25)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(15,76,129,.35)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-sm{padding:4px 10px!important;font-size:11px!important}
+.params-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:6px;margin-top:6px}
+.param-card{padding:8px 10px;background:#f8fafc;border-radius:6px;border:1px solid #e2e8f0}
+.param-card .param-label{font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.3px;font-weight:600}
+.param-card .param-value{font-size:16px;font-weight:700;color:#0f4c81;margin:2px 0 1px}
+.param-card .param-unit{font-size:10px;color:#999}
+.param-card.highlight{background:#ebf8f4;border-color:#1a7a5c}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:700px){.charts-grid{grid-template-columns:1fr}}
+.chart-box{position:relative;height:220px}
+.chart-box.tall{height:250px}
+.gof-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;padding:8px 12px;background:#f8fafc;border-radius:6px;font-size:11px;align-items:center}
+.gof-item{color:#555}
+.gof-item strong{color:#0f4c81}
+.eq-box{padding:8px 12px;background:#f0f6ff;border-radius:6px;border-left:4px solid #0f4c81;margin:8px 0;font-family:'Cambria','Times New Roman',serif;font-size:13px;color:#1a1a2e;overflow-x:auto}
+.status-msg{font-size:11px;color:#888;margin-top:5px}
+.status-msg.error{color:#e74c3c}
+.status-msg.success{color:#1a7a5c}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(80px);background:#1a1a2e;color:#fff;padding:10px 20px;border-radius:8px;font-size:12px;opacity:0;transition:all .35s ease;z-index:2000;pointer-events:none}
+.toast.visible{opacity:1;transform:translateX(-50%) translateY(0)}
+.paste-area{width:100%;padding:6px 8px;border:1.5px dashed #dde1e7;border-radius:6px;font-size:11px;font-family:monospace;resize:vertical;min-height:44px;outline:none;margin-bottom:5px}
+.paste-area:focus{border-color:#0f4c81}
+.footer{text-align:center;padding:14px;color:#999;font-size:11px;margin-top:14px}
+.tab-bar{display:flex;gap:0;background:#f0f2f5;border-radius:7px;padding:3px;margin-bottom:10px}
+.tab-item{flex:1;padding:6px 10px;border:none;background:transparent;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;color:#666;text-align:center}
+.tab-item:hover{color:#333}
+.tab-item.active{background:#fff;color:#0f4c81;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.table-comp{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px}
+.table-comp th{background:#f8fafc;padding:5px 8px;text-align:center;font-weight:600;font-size:11px;color:#555;border-bottom:2px solid #e2e8f0}
+.table-comp td{padding:4px 8px;text-align:center;border-bottom:1px solid #f0f2f5}
+.table-comp .best{background:#ebf8f4;font-weight:700;color:#1a7a5c}
+.sim-input{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.sim-input .sg{flex:1;min-width:70px}
+.sim-input .sg label{font-size:10px;font-weight:600;color:#555;display:block}
+.sim-input .sg input{padding:4px 6px;border:1px solid #dde1e7;border-radius:4px;font-size:11px;width:100%;outline:none}
+.sim-input .sg input:focus{border-color:#0f4c81}
+.outlier-badge{display:inline-block;background:#e74c3c;color:#fff;font-size:9px;padding:1px 6px;border-radius:10px;margin-left:4px}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header class="header">
+  <h1>🏥 PK Analyzer Pro · 药动学专业分析工具 <small>智能模型判断 / 多剂量 / NCA / 报告</small></h1>
+  <div class="header-badge">⚕️ v2.0 · 加权最小二乘 · 数据本地处理</div>
+</header>
+
+<div class="grid">
+
+<!-- ===== LEFT ===== -->
+<div class="left-panel">
+
+  <!-- Model -->
+  <div class="card">
+    <div class="card-title">⚙️ 模型设置
+      <label style="margin-left:auto;font-size:11px;display:flex;align-items:center;gap:4px;color:#555;font-weight:400;cursor:pointer">
+        <input type="checkbox" id="autoModel" onchange="onAutoModelChange()" style="accent-color:#0f4c81"> 🧠 智能判断
+      </label>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>房室模型</label><select id="modelType" onchange="onModelChange()">
+        <option value="single">单室模型</option><option value="two">二室模型</option>
+        <option value="nonlinear">非线性动力学</option><option value="nca">非房室模型 NCA</option>
+      </select></div>
+      <div class="form-group"><label>给药方式</label><select id="route" onchange="onModelChange()">
+        <option value="bolus">IV Bolus</option><option value="oral">Oral</option><option value="infusion">IV Infusion</option>
+      </select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>剂量 (mg)</label><input type="number" id="dose" value="100" step="any" min="0"></div>
+      <div class="form-group" id="infusionGroup" style="display:none"><label>滴注时间 (h)</label><input type="number" id="infusionTime" value="2" step="any" min="0"></div>
+      <div class="form-group" id="bioGroup" style="display:none"><label>F</label><input type="number" id="bioavail" value="1" step=".05" min="0" max="1"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>⚖️ 权重</label><select id="weighting">
+        <option value="1">1 (OLS)</option><option value="1c">1/C (WLS)</option><option value="1cc" selected>1/C² (WLS, 推荐)</option>
+      </select></div>
+      <div class="form-group"><label>体重 (kg)</label><input type="number" id="weight" value="" step="any" min="0" placeholder="—"></div>
+    </div>
+  </div>
+
+  <!-- Data -->
+  <div class="card">
+    <div class="card-title">📊 血药浓度数据 <span id="outlierBadge" style="display:none"></span></div>
+    <div class="data-table-wrap"><table class="data-table"><thead><tr><th style="width:60px">时间(h)</th><th>浓度(mg/L)</th><th style="width:28px"></th></tr></thead>
+      <tbody id="dataBody"></tbody></table>
+    </div>
+    <div class="data-actions">
+      <button onclick="addRow()">＋ 添加</button>
+      <button onclick="clearData()">🗑️ 清空</button>
+      <button onclick="loadExample()">📄 示例</button>
+      <span id="modelLabel" style="font-size:10px;color:#888;margin-left:auto;align-self:center"></span>
+      <button onclick="removeOutliers()" id="rmOutlierBtn" style="display:none;color:#e74c3c;border-color:#e74c3c">🚫 剔除异常值</button>
+    </div>
+    <div style="margin-top:6px;padding-top:6px;border-top:1px dashed #e2e8f0">
+      <label style="font-size:10px;font-weight:600;color:#555">📋 粘贴（时间\t浓度）</label>
+      <textarea class="paste-area" id="pasteArea" placeholder="0.5\t8.21&#10;1\t6.55&#10;2\t4.18"></textarea>
+      <button class="btn" onclick="pasteData()" style="font-size:11px">📥 导入</button>
+    </div>
+  </div>
+
+  <button class="btn-primary" id="calcBtn" onclick="calculate()" style="width:100%;justify-content:center">🚀 开始计算</button>
+  <div class="status-msg" id="statusMsg"></div>
+</div>
+
+<!-- ===== RIGHT ===== -->
+<div class="right-panel">
+
+  <!-- Model Comparison -->
+  <div class="card" id="compCard" style="display:none">
+    <div class="card-title">🧠 房室模型比较与推荐</div>
+    <div id="compContent"></div>
+  </div>
+
+  <!-- Equation -->
+  <div class="card" id="eqCard" style="display:none">
+    <div class="card-title">📐 拟合方程</div>
+    <div class="eq-box" id="eqDisplay"></div>
+  </div>
+
+  <!-- Parameters -->
+  <div class="card" id="paramsCard" style="display:none">
+    <div class="card-title">📋 药动学参数</div>
+    <div class="params-grid" id="paramsGrid"></div>
+    <div class="gof-row" id="gofRow" style="display:none">
+      <span class="gof-item">R² = <strong id="rsq">—</strong></span>
+      <span class="gof-item">AIC = <strong id="aic">—</strong></span>
+      <span class="gof-item">WSS = <strong id="wss">—</strong></span>
+      <span class="gof-item">n = <strong id="npts">—</strong></span>
+      <span class="gof-item"><button class="btn btn-sm" onclick="exportCSV()">📤 CSV</button></span>
+      <span class="gof-item"><button class="btn btn-sm" onclick="generateReport()">📑 报告</button></span>
+    </div>
+  </div>
+
+  <!-- NCA -->
+  <div class="card" id="ncaCard" style="display:none">
+    <div class="card-title">📋 非房室模型 (NCA) 参数</div>
+    <table class="table-comp" id="ncaTable"></table>
+  </div>
+
+  <!-- AUC Segment -->
+  <div class="card" id="aucSegCard" style="display:none">
+    <div class="card-title">📏 AUC 分段计算</div>
+    <div class="form-row" style="margin-bottom:6px">
+      <div class="form-group" style="min-width:60px"><label>起始 (h)</label><input type="number" id="aucStart" value="0" step="any" min="0"></div>
+      <div class="form-group" style="min-width:60px"><label>结束 (h)</label><input type="number" id="aucEnd" value="0" step="any" min="0"></div>
+      <div style="display:flex;align-items:end;padding-bottom:2px"><button class="btn btn-sm" onclick="calcAucSegment()">📊 计算</button></div>
+    </div>
+    <div id="aucSegResult" style="font-size:12px;color:#555"></div>
+  </div>
+
+  <!-- Multi-dose Simulation -->
+  <div class="card" id="simCard" style="display:none">
+    <div class="card-title">💊 多剂量给药模拟</div>
+    <div class="sim-input">
+      <div class="sg"><label>剂量 (mg)</label><input type="number" id="simDose" value="100"></div>
+      <div class="sg"><label>间隔 (h)</label><input type="number" id="simInterval" value="12"></div>
+      <div class="sg"><label>次数</label><input type="number" id="simNum" value="5"></div>
+      <div style="display:flex;align-items:end"><button class="btn btn-sm" onclick="runSimulation()">▶ 模拟</button></div>
+    </div>
+    <div class="chart-box tall"><canvas id="simChart"></canvas></div>
+    <div id="simResult" style="font-size:11px;color:#555;margin-top:4px"></div>
+  </div>
+
+  <!-- Charts -->
+  <div class="card" id="chartCard" style="display:none">
+    <div class="card-title">📈 拟合图</div>
+    <div class="tab-bar" id="plotTabs">
+      <button class="tab-item active" data-tab="main" onclick="switchTab('main')">浓度-时间</button>
+      <button class="tab-item" data-tab="residual" onclick="switchTab('residual')">残差</button>
+      <button class="tab-item" data-tab="predvsobs" onclick="switchTab('predvsobs')">预测vs实测</button>
+    </div>
+    <div id="plotMain"><div class="charts-grid">
+      <div><div style="font-size:10px;font-weight:600;color:#555;margin-bottom:3px">线性坐标</div><div class="chart-box"><canvas id="linearChart"></canvas></div></div>
+      <div><div style="font-size:10px;font-weight:600;color:#555;margin-bottom:3px">半对数坐标</div><div class="chart-box"><canvas id="semilogChart"></canvas></div></div>
+    </div></div>
+    <div id="plotResidual" style="display:none"><div class="chart-box tall"><canvas id="residualChart"></canvas></div></div>
+    <div id="plotPredObs" style="display:none"><div class="chart-box tall"><canvas id="predObsChart"></canvas></div></div>
+  </div>
+</div></div>
+
+<div class="footer">💊 PK Analyzer Pro v2.0 · 仅供科研参考 · 数据仅本地处理，不上传服务器</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   STATE
+   ============================================================ */
+let dataPoints = [];
+let charts = { linear:null, semilog:null, residual:null, predObs:null, sim:null };
+let lastResult = null, lastData = null, lastModel = null, lastModelName = '';
+let outlierIdx = [];
+let allModelResults = [];
+let simChart = null;
+
+const $ = id => document.getElementById(id);
+const toast = $('toast');
+
+/* ============================================================
+   INIT
+   ============================================================ */
+document.addEventListener('DOMContentLoaded', () => {
+  for (let i = 0; i < 5; i++) addRow();
+  onModelChange();
+});
+
+function onModelChange() {
+  const m = $('modelType').value, r = $('route').value;
+  const rs = $('route');
+  if ($('autoModel').checked) { rs.innerHTML = '<option value="bolus">IV Bolus</option>'; $('modelType').value = 'single'; updateModelLabel(); return; }
+  rs.innerHTML = (m === 'nonlinear' || m === 'nca')
+    ? '<option value="bolus">IV Bolus</option>'
+    : '<option value="bolus">IV Bolus</option><option value="oral">Oral</option><option value="infusion">IV Infusion</option>';
+  if (['bolus','oral','infusion'].includes(r)) rs.value = r;
+  const rv = rs.value;
+  $('infusionGroup').style.display = (m !== 'nca' && rv === 'infusion') ? 'block' : 'none';
+  $('bioGroup').style.display = (m !== 'nca' && rv === 'oral' && m !== 'nonlinear') ? 'block' : 'none';
+  hideResults();
+  updateModelLabel();
+}
+
+function updateModelLabel() {
+  const m = $('modelType').value, r = $('route').value;
+  const auto = $('autoModel').checked;
+  const names = {
+    single_bolus: '单室·IV Bolus', single_oral: '单室·Oral', single_infusion: '单室·IV Infusion',
+    two_bolus: '二室·IV Bolus', two_oral: '二室·Oral',
+    nonlinear_bolus: '非线性·IV Bolus',
+    nca_bolus: 'NCA·IV Bolus'
+  };
+  const key = auto ? 'single_bolus' : (m === 'nca' ? 'nca_bolus' : m + '_' + (m === 'nonlinear' ? 'bolus' : r));
+  const lbl = document.getElementById('modelLabel');
+  if (lbl) lbl.textContent = '当前：' + (names[key] || '—');
+}
+
+function onAutoModelChange() {
+  const auto = $('autoModel').checked;
+  $('modelType').disabled = auto;
+  $('route').disabled = auto;
+  if (auto) { $('modelType').value = 'single'; $('route').value = 'bolus'; $('infusionGroup').style.display = 'none'; $('bioGroup').style.display = 'none'; }
+  else { $('modelType').disabled = false; $('route').disabled = false; }
+  onModelChange();
+}
+
+$('route').addEventListener('change', onModelChange);
+$('modelType').addEventListener('change', onModelChange);
+
+/* ============================================================
+   DATA TABLE
+   ============================================================ */
+function addRow(t, c) {
+  const idx = dataPoints.length;
+  dataPoints.push({ t: t ?? '', c: c ?? '' });
+  const tr = document.createElement('tr');
+  tr.id = 'r'+idx;
+  tr.innerHTML = `<td><input type="number" step="any" value="${t??''}" placeholder="0.5" onchange="ud(${idx},'t',this.value)"></td>
+    <td><input type="number" step="any" value="${c??''}" placeholder="5.2" onchange="ud(${idx},'c',this.value)"></td>
+    <td><button class="del-btn" onclick="del(${idx})">✕</button></td>`;
+  $('dataBody').appendChild(tr);
+}
+const ud = (i,f,v) => { if (dataPoints[i]) dataPoints[i][f] = v === '' ? '' : parseFloat(v); };
+const del = i => { dataPoints.splice(i,1); renderTable(); };
+function clearData() { dataPoints = []; outlierIdx = []; renderTable(); hideResults(); $('rmOutlierBtn').style.display = 'none'; $('outlierBadge').style.display = 'none'; showToast('已清空'); }
+function renderTable() {
+  const tb = $('dataBody'); tb.innerHTML = '';
+  dataPoints.forEach((d,i) => {
+    const isOut = outlierIdx.includes(i);
+    const tr = document.createElement('tr');
+    tr.className = isOut ? 'outlier' : '';
+    tr.innerHTML = `<td><input type="number" step="any" value="${d.t!==''?d.t:''}" placeholder="0.5" onchange="ud(${i},'t',this.value)"></td>
+      <td><input type="number" step="any" value="${d.c!==''?d.c:''}" placeholder="5.2" onchange="ud(${i},'c',this.value)">${isOut?'<span class="outlier-badge">异常</span>':''}</td>
+      <td><button class="del-btn" onclick="del(${i})">✕</button></td>`;
+    tb.appendChild(tr);
+  });
+}
+function pasteData() {
+  const text = $('pasteArea').value.trim(); if (!text) { showToast('请粘贴数据'); return; }
+  let cnt = 0;
+  for (const line of text.split('\n').filter(l=>l.trim())) {
+    const p = line.includes('\t')?line.split('\t'):line.includes(',')?line.split(','):line.split(/\s+/).filter(s=>s);
+    if (p.length>=2) { const t=parseFloat(p[0]),c=parseFloat(p[1]); if (!isNaN(t)&&!isNaN(c)&&t>=0&&c>=0) { addRow(t,c); cnt++; } }
+  }
+  $('pasteArea').value = ''; showToast(`✅ 导入 ${cnt} 个点`);
+  if (!cnt) showToast('⚠️ 格式：时间\\t浓度');
+}
+function loadExample() {
+  clearData();
+  const m = $('modelType').value, r = $('route').value;
+  let ex, doseVal = 100, label = '', bioVal = 1, infTime = 2;
+
+  // Model-specific example data
+  const examples = {
+    'single_bolus': {
+      data: [[0.5,8.21],[1,6.55],[2,4.18],[3,2.67],[4,1.70],[6,0.69],[8,0.28],[12,0.05]],
+      dose: 100, label: '单室·IV Bolus 100mg'
+    },
+    'single_oral': {
+      data: [[0.25,0.8],[0.5,2.5],[1,5.8],[2,7.2],[3,5.5],[4,3.8],[6,1.8],[8,0.8],[12,0.2]],
+      dose: 100, label: '单室·Oral 100mg (F=1)', bio: 1
+    },
+    'single_infusion': {
+      data: [[0.5,3.8],[1,6.9],[1.5,9.4],[2,11.3],[2.5,8.6],[3,6.5],[4,3.8],[6,1.3],[8,0.45]],
+      dose: 100, label: '单室·IV Infusion 100mg/2h', inf: 2
+    },
+    'two_bolus': {
+      data: [[0.083,15.2],[0.25,11.8],[0.5,9.1],[1,6.8],[2,4.5],[4,2.8],[8,1.2],[12,0.5]],
+      dose: 100, label: '二室·IV Bolus 100mg'
+    },
+    'two_oral': {
+      data: [[0.25,1.2],[0.5,3.2],[1,5.8],[2,5.5],[3,4.2],[4,3.0],[6,1.5],[8,0.7],[12,0.2]],
+      dose: 100, label: '二室·Oral 100mg (F=1)', bio: 1
+    },
+    'nonlinear_bolus': {
+      data: [[0.5,9.5],[1,8.2],[2,6.5],[3,5.2],[4,4.1],[6,2.6],[8,1.6],[12,0.6]],
+      dose: 100, label: '非线性·IV Bolus 100mg'
+    },
+    'nca_bolus': {
+      data: [[0.5,8.21],[1,6.55],[2,4.18],[3,2.67],[4,1.70],[6,0.69],[8,0.28],[12,0.05]],
+      dose: 100, label: 'NCA·IV Bolus 100mg'
+    }
+  };
+
+  // For auto mode, use single bolus
+  if ($('autoModel').checked) {
+    ex = examples['single_bolus'];
+    $('modelType').value = 'single'; $('route').value = 'bolus';
+  } else {
+    const key = m + '_' + (m === 'nca' ? 'bolus' : r);
+    ex = examples[key] || examples['single_bolus'];
+    // Ensure model/route match
+    if (m === 'nca') $('route').value = 'bolus';
+    if (m === 'nonlinear') $('route').value = 'bolus';
+  }
+
+  dataPoints = []; $('dataBody').innerHTML = '';
+  ex.data.forEach(([t,c]) => addRow(t, c));
+  $('dose').value = ex.dose;
+  if (ex.bio !== undefined) { $('bioavail').value = ex.bio; $('bioGroup').style.display = 'block'; }
+  if (ex.inf !== undefined) { $('infusionTime').value = ex.inf; $('infusionGroup').style.display = 'block'; }
+  onModelChange();
+  showToast(`📄 ${ex.label}`);
+}
+function getValidData() {
+  return dataPoints.map(d => ({ t: parseFloat(d.t), c: parseFloat(d.c) }))
+    .filter(d => !isNaN(d.t) && !isNaN(d.c) && d.t >= 0 && d.c > 0)
+    .sort((a,b) => a.t - b.t);
+}
+
+/* ============================================================
+   MATH
+   ============================================================ */
+function linReg(x, y, w) {
+  const n = x.length; let sw=0,sx=0,sy=0,sxy=0,sx2=0;
+  for (let i=0;i<n;i++) { const wi=w?w[i]:1; sw+=wi; sx+=wi*x[i]; sy+=wi*y[i]; sxy+=wi*x[i]*y[i]; sx2+=wi*x[i]*x[i]; }
+  const d = sw*sx2 - sx*sx, slope = d ? (sw*sxy - sx*sy)/d : 0, intc = d ? (sy - slope*sx)/sw : 0;
+  let ssR=0, ssT=0, ym=sy/sw;
+  for (let i=0;i<n;i++) { const wi=w?w[i]:1, p=slope*x[i]+intc; ssR+=wi*(y[i]-p)**2; ssT+=wi*(y[i]-ym)**2; }
+  return { slope, intercept: intc, rsq: ssT>0 ? 1-ssR/ssT : 0, n };
+}
+function getW(data, t) {
+  if (t === '1') return data.map(() => 1);
+  if (t === '1c') return data.map(d => 1/Math.max(d.c,1e-9));
+  return data.map(d => 1/(d.c*d.c+1e-9));
+}
+function matMulVec(J,r) { const c=J[0].length, res=Array(c).fill(0); for (let j=0;j<c;j++) for (let i=0;i<J.length;i++) res[j]+=J[i][j]*r[i]; return res; }
+function matMulT(J,w) { const c=J[0].length, H=Array.from({length:c},()=>Array(c).fill(0));
+  for (let j=0;j<c;j++) for (let k=0;k<c;k++) { let s=0; for (let i=0;i<J.length;i++) s+=w[i]*J[i][j]*J[i][k]; H[j][k]=s; } return H; }
+function solveLin(A,b) {
+  const n=b.length, aug=A.map((r,i)=>[...r,b[i]]);
+  for (let i=0;i<n;i++) { let mr=i; for (let k=i+1;k<n;k++) if (Math.abs(aug[k][i])>Math.abs(aug[mr][i])) mr=k;
+    [aug[i],aug[mr]]=[aug[mr],aug[i]]; if (Math.abs(aug[i][i])<1e-12) continue;
+    for (let k=i+1;k<n;k++) { const f=aug[k][i]/aug[i][i]; for (let j=i;j<=n;j++) aug[k][j]-=f*aug[i][j]; } }
+  const x=Array(n).fill(0);
+  for (let i=n-1;i>=0;i--) { x[i]=aug[i][n]/aug[i][i]; for (let k=i-1;k>=0;k--) aug[k][n]-=aug[k][i]*x[i]; }
+  return x;
+}
+function calcAIC(res,nP) { const n=res.length; if (n<=nP) return Infinity; const sse=res.reduce((s,r)=>s+r*r,0); return sse>0 ? n*Math.log(sse/n)+2*nP : -Infinity; }
+function calcWSS(res,data,wt) { return res.reduce((s,r,i)=>{ const w=wt==='1'?1:wt==='1c'?1/Math.max(data[i].c,1e-9):1/(data[i].c*data[i].c+1e-9); return s+w*r*r; },0); }
+
+/* ============================================================
+   SINGLE COMPARTMENT
+   ============================================================ */
+function fitSB(data, dose, w) {
+  const t = data.map(d=>d.t), lc = data.map(d=>Math.log(d.c));
+  const reg = linReg(t, lc, w);
+  const K = -reg.slope, C0 = Math.exp(reg.intercept);
+  const Vd = dose/C0, tHalf = Math.LN2/K, AUC = C0/K, CL = K*Vd, AUMC = C0/(K*K), MRT = AUMC/AUC;
+  const pred = data.map(d => C0*Math.exp(-K*d.t)), res = data.map((d,i)=>d.c - pred[i]);
+  const ssR = res.reduce((s,r,i)=>s+w[i]*r*r,0);
+  const cMn = data.reduce((s,d)=>s+d.c,0)/data.length;
+  const ssT = data.reduce((s,d,i)=>s+w[i]*(d.c-cMn)**2,0);
+  return { params:[
+    {k:'K',l:'K (消除速率常数)',v:K,u:'1/h',f:v=>v.toFixed(4)},
+    {k:'tHalf',l:'t₁/₂ (消除半衰期)',v:tHalf,u:'h',f:v=>v.toFixed(3)},
+    {k:'C0',l:'C₀ (初始浓度)',v:C0,u:'mg/L',f:v=>v.toFixed(3)},
+    {k:'Vd',l:'Vd (表观分布容积)',v:Vd,u:'L',f:v=>v.toFixed(3)},
+    {k:'AUC',l:'AUC₀→∞',v:AUC,u:'mg·h/L',f:v=>v.toFixed(3)},
+    {k:'CL',l:'CL (清除率)',v:CL,u:'L/h',f:v=>v.toFixed(4)},
+    {k:'MRT',l:'MRT (平均滞留时间)',v:MRT,u:'h',f:v=>v.toFixed(3)},
+    {k:'AUMC',l:'AUMC₀→∞',v:AUMC,u:'mg·h²/L',f:v=>v.toFixed(3)}
+  ], pred, res, rsq: ssT>0 ? 1-ssR/ssT : 0, aic: calcAIC(res,2), wss: calcWSS(res,data,w),
+    eq: `C(t) = ${C0.toFixed(3)} × e^(−${K.toFixed(4)} × t)`, model:'single_bolus', name:'单室·IV Bolus' };
+}
+function fitSO(data, dose, F, w) {
+  const t = data.map(d=>d.t), c = data.map(d=>d.c), n = data.length;
+  const nT = Math.min(4, Math.max(2, Math.floor(n/2)));
+  const td = data.slice(-nT), regT = linReg(td.map(d=>d.t), td.map(d=>Math.log(d.c)), null);
+  let K = -regT.slope, B = Math.exp(regT.intercept); if (K<0.01) K=0.5;
+  const rM = data.map(d => B*Math.exp(-K*d.t) - d.c);
+  const rp = []; for (let i=0;i<n;i++) { if (rM[i]>0.01*data[i].c && t[i]<3/K) rp.push({t:t[i],r:Math.log(rM[i])}); }
+  let ka = K*2, A = B;
+  if (rp.length>=2) { const regR = linReg(rp.map(d=>d.t), rp.map(d=>d.r), null); ka = -regR.slope; A = Math.exp(regR.intercept); }
+  if (ka<=K*1.1) ka = K*2; if (ka>20) ka=20;
+  let p = [A,K,ka];
+  for (let it=0;it<60;it++) {
+    const [a0,k0,ka0]=p, J=[], r=[];
+    for (let i=0;i<n;i++) { const eK=Math.exp(-k0*t[i]), eKa=Math.exp(-ka0*t[i]), pr=a0*(eK-eKa), sw=Math.sqrt(w[i]); r.push((c[i]-pr)*sw); J.push([(eK-eKa)*sw,(-a0*t[i]*eK)*sw,(a0*t[i]*eKa)*sw]); }
+    const H = matMulT(J,data.map(()=>1)), JTr = matMulVec(J,r);
+    for (let i=0;i<3;i++) H[i][i]*=1.001;
+    const dP = solveLin(H,JTr); p[0]+=dP[0]; p[1]+=dP[1]; p[2]+=dP[2];
+    if (p[0]<0) p[0]=a0*0.5; if (p[1]<0) p[1]=k0*0.5; if (p[2]<0) p[2]=ka0*0.5; if (p[2]<=p[1]) p[2]=p[1]*2;
+    if (Math.sqrt(dP[0]**2+dP[1]**2+dP[2]**2)<1e-8) break;
+  }
+  const [Af,Kf,kaf]=p;
+  const tH = Math.LN2/Kf, tHk = Math.LN2/kaf;
+  let Tmax, Cmax;
+  if (Math.abs(kaf - Kf) < 1e-6) {
+    Tmax = 1 / Kf;
+    Cmax = Af * (Math.exp(-Kf*Tmax) - Math.exp(-kaf*Tmax));
+  } else {
+    Tmax = Math.log(kaf/Kf) / (kaf-Kf);
+    if (Tmax < 0 || !isFinite(Tmax)) Tmax = 1 / Kf;
+    Cmax = Af*(Math.exp(-Kf*Tmax)-Math.exp(-kaf*Tmax));
+  }
+  const AUC = Af/Kf - Af/kaf, VdF = dose/(Kf*AUC), CLF = Kf*VdF;
+  const pred = data.map(d => Af*(Math.exp(-Kf*d.t)-Math.exp(-kaf*d.t))), res = data.map((d,i)=>d.c-pred[i]);
+  const ssR = res.reduce((s,r,i)=>s+w[i]*r*r,0), cMn = data.reduce((s,d)=>s+d.c,0)/n;
+  const ssT = data.reduce((s,d,i)=>s+w[i]*(d.c-cMn)**2,0);
+  return { params:[
+    {k:'ka',l:'ka (吸收速率)',v:kaf,u:'1/h',f:v=>v.toFixed(4)},{k:'tHalfKa',l:'t₁/₂(ka)',v:tHk,u:'h',f:v=>v.toFixed(3)},
+    {k:'K',l:'K (消除速率)',v:Kf,u:'1/h',f:v=>v.toFixed(4)},{k:'tHalf',l:'t₁/₂ (消除半衰期)',v:tH,u:'h',f:v=>v.toFixed(3)},
+    {k:'Tmax',l:'Tmax (达峰时间)',v:Tmax,u:'h',f:v=>v.toFixed(3)},{k:'Cmax',l:'Cmax (峰浓度)',v:Cmax,u:'mg/L',f:v=>v.toFixed(3)},
+    {k:'AUC',l:'AUC₀→∞',v:AUC,u:'mg·h/L',f:v=>v.toFixed(3)},{k:'VdF',l:'Vd/F',v:VdF,u:'L',f:v=>v.toFixed(3)},{k:'CLF',l:'CL/F',v:CLF,u:'L/h',f:v=>v.toFixed(4)}
+  ], pred, res, rsq: ssT>0 ? 1-ssR/ssT : 0, aic: calcAIC(res,3), wss: calcWSS(res,data,w),
+    eq: `C(t) = ${Af.toFixed(3)}×(e^(−${Kf.toFixed(4)}×t) − e^(−${kaf.toFixed(4)}×t))`, model:'single_oral', name:'单室·Oral' };
+}
+function fitSI(data, dose, Tinf, w) {
+  const post = data.filter(d=>d.t>=Tinf);
+  if (post.length<2) throw new Error('滴注后数据点不足');
+  const reg = linReg(post.map(d=>d.t), post.map(d=>Math.log(d.c)), null);
+  const K = -reg.slope, CT = Math.exp(reg.intercept), k0 = dose/Tinf, Vd = k0/(K*CT)*(1-Math.exp(-K*Tinf));
+  const CL = K*Vd, tHalf = Math.LN2/K, AUC = dose/CL;
+  const pred = data.map(d => d.t<Tinf ? (k0/(Vd*K))*(1-Math.exp(-K*d.t)) : CT*Math.exp(-K*(d.t-Tinf)));
+  const res = data.map((d,i)=>d.c-pred[i]);
+  const ssR = res.reduce((s,r,i)=>s+w[i]*r*r,0), cMn = data.reduce((s,d)=>s+d.c,0)/data.length;
+  const ssT = data.reduce((s,d,i)=>s+w[i]*(d.c-cMn)**2,0);
+  return { params:[
+    {k:'K',l:'K (消除速率)',v:K,u:'1/h',f:v=>v.toFixed(4)},{k:'tHalf',l:'t₁/₂',v:tHalf,u:'h',f:v=>v.toFixed(3)},
+    {k:'CT',l:'C_T (滴注结束)',v:CT,u:'mg/L',f:v=>v.toFixed(3)},{k:'Vd',l:'Vd',v:Vd,u:'L',f:v=>v.toFixed(3)},
+    {k:'CL',l:'CL',v:CL,u:'L/h',f:v=>v.toFixed(4)},{k:'AUC',l:'AUC₀→∞',v:AUC,u:'mg·h/L',f:v=>v.toFixed(3)},
+    {k:'k0',l:'k₀ (滴注速率)',v:k0,u:'mg/h',f:v=>v.toFixed(2)}
+  ], pred, res, rsq: ssT>0 ? 1-ssR/ssT : 0, aic: calcAIC(res,2), wss: calcWSS(res,data,w),
+    eq: `C(t)=${k0.toFixed(2)}/(${Vd.toFixed(3)}×${K.toFixed(4)})×(1−e^(−${K.toFixed(4)}×t))  |  滴注后: C(t)=${CT.toFixed(3)}×e^(−${K.toFixed(4)}×(t−${Tinf}))`, model:'single_infusion', name:'单室·IV Infusion' };
+}
+
+/* ============================================================
+   TWO COMPARTMENT
+   ============================================================ */
+function fit2B(data, dose, w) {
+  const t = data.map(d=>d.t), c = data.map(d=>d.c), n = data.length;
+  const nT = Math.min(4, Math.max(2, Math.floor(n*0.4)));
+  const td = data.slice(-nT), regB = linReg(td.map(d=>d.t), td.map(d=>Math.log(d.c)), null);
+  let be = -regB.slope, B = Math.exp(regB.intercept); if (be<0.01) be=0.3;
+  const rS = data.map(d => d.c - B*Math.exp(-be*d.t));
+  const rp = []; for (let i=0;i<n;i++) { if (rS[i]>0.01*data[i].c && t[i]<2/be) rp.push({t:t[i],r:Math.log(rS[i])}); }
+  let al = be*5, A = B;
+  if (rp.length>=2) { const regA = linReg(rp.map(d=>d.t), rp.map(d=>d.r), null); al = -regA.slope; A = Math.exp(regA.intercept); }
+  if (al<=be*1.1) al=be*5; if (al>50) al=50;
+  let p = [A,al,B,be];
+  for (let it=0;it<80;it++) {
+    const [a0,al0,b0,be0]=p, J=[], r=[];
+    for (let i=0;i<n;i++) { const eA=Math.exp(-al0*t[i]), eB=Math.exp(-be0*t[i]), pr=a0*eA+b0*eB, sw=Math.sqrt(w[i]); r.push((c[i]-pr)*sw); J.push([eA*sw, -a0*t[i]*eA*sw, eB*sw, -b0*t[i]*eB*sw]); }
+    const H = matMulT(J,data.map(()=>1)), JTr = matMulVec(J,r);
+    for (let i=0;i<4;i++) H[i][i]*=1.001;
+    const dP = solveLin(H,JTr); p[0]+=dP[0]; p[1]+=dP[1]; p[2]+=dP[2]; p[3]+=dP[3];
+    if (p[0]<0) p[0]=a0*0.5; if (p[1]<0) p[1]=al0*0.5; if (p[2]<0) p[2]=b0*0.5; if (p[3]<0) p[3]=be0*0.5;
+    if (p[1]<=p[3]) p[1]=p[3]*3; if (Math.sqrt(dP[0]**2+dP[1]**2+dP[2]**2+dP[3]**2)<1e-8) break;
+  }
+  const [Af,alf,Bf,bef] = p;
+  const tHa = Math.LN2/alf, tHb = Math.LN2/bef, AUC = Af/alf + Bf/bef, CL = dose/AUC;
+  const Vc = dose/(Af+Bf), k10 = alf*bef*(Af+Bf)/(Af*bef+Bf*alf);
+  const k12 = Af*Bf*(bef-alf)**2/((Af+Bf)*(Af*bef+Bf*alf)), k21 = (Af*bef+Bf*alf)/(Af+Bf) - k10 - k12;
+  const Vss = CL*(Af/alf/alf+Bf/bef/bef)/AUC;
+  const pred = data.map(d => Af*Math.exp(-alf*d.t)+Bf*Math.exp(-bef*d.t)), res = data.map((d,i)=>d.c-pred[i]);
+  const ssR = res.reduce((s,r,i)=>s+w[i]*r*r,0), cMn = data.reduce((s,d)=>s+d.c,0)/n;
+  const ssT = data.reduce((s,d,i)=>s+w[i]*(d.c-cMn)**2,0);
+  return { params:[
+    {k:'A',l:'A (分布相截距)',v:Af,u:'mg/L',f:v=>v.toFixed(3)},{k:'alpha',l:'α (分布速率)',v:alf,u:'1/h',f:v=>v.toFixed(4)},{k:'tHalfA',l:'t₁/₂α',v:tHa,u:'h',f:v=>v.toFixed(3)},
+    {k:'B',l:'B (消除相截距)',v:Bf,u:'mg/L',f:v=>v.toFixed(3)},{k:'beta',l:'β (消除速率)',v:bef,u:'1/h',f:v=>v.toFixed(4)},{k:'tHalfB',l:'t₁/₂β',v:tHb,u:'h',f:v=>v.toFixed(3)},
+    {k:'AUC',l:'AUC₀→∞',v:AUC,u:'mg·h/L',f:v=>v.toFixed(3)},{k:'CL',l:'CL',v:CL,u:'L/h',f:v=>v.toFixed(4)},
+    {k:'Vc',l:'Vc (中央室)',v:Vc,u:'L',f:v=>v.toFixed(3)},{k:'Vss',l:'Vss (稳态)',v:Vss,u:'L',f:v=>v.toFixed(3)},
+    {k:'k10',l:'k₁₀',v:k10,u:'1/h',f:v=>v.toFixed(4)},{k:'k12',l:'k₁₂',v:k12,u:'1/h',f:v=>v.toFixed(4)},{k:'k21',l:'k₂₁',v:k21,u:'1/h',f:v=>v.toFixed(4)}
+  ], pred, res, rsq: ssT>0 ? 1-ssR/ssT : 0, aic: calcAIC(res,4), wss: calcWSS(res,data,w),
+    eq: `C(t)=${Af.toFixed(3)}×e^(−${alf.toFixed(4)}×t)+${Bf.toFixed(3)}×e^(−${bef.toFixed(4)}×t)`, model:'two_bolus', name:'二室·IV Bolus' };
+}
+function fit2O(data, dose, F, w) {
+  const t = data.map(d=>d.t), c = data.map(d=>d.c), n = data.length;
+  const nT = Math.min(4, Math.max(2, Math.floor(n*0.35)));
+  const td = data.slice(-nT), regB = linReg(td.map(d=>d.t), td.map(d=>Math.log(d.c)), null);
+  let be = -regB.slope, B = Math.exp(regB.intercept); if (be<0.01) be=0.3;
+  const rD = data.map(d => d.c - B*Math.exp(-be*d.t));
+  const rpD = []; for (let i=0;i<n;i++) { if (rD[i]>0.01*data[i].c && t[i]<2/be) rpD.push({t:t[i],r:Math.log(rD[i])}); }
+  let al = be*5, A = B;
+  if (rpD.length>=2) { const regA = linReg(rpD.map(d=>d.t), rpD.map(d=>d.r), null); al = -regA.slope; A = Math.exp(regA.intercept); }
+  if (al<=be*1.1) al=be*5; if (al>50) al=50;
+  const rK = data.map(d => { const two = A*Math.exp(-al*d.t)+B*Math.exp(-be*d.t); return d.c - two; });
+  const rpK = []; for (let i=0;i<n;i++) { const diff = A*Math.exp(-al*t[i])+B*Math.exp(-be*t[i]) - c[i]; if (diff>0.01*c[i] && t[i]<2/al) rpK.push({t:t[i],r:Math.log(diff)}); }
+  let ka = al*2;
+  if (rpK.length>=2) { const regK = linReg(rpK.map(d=>d.t), rpK.map(d=>d.r), null); ka = -regK.slope; }
+  if (ka<=al*1.1) ka=al*2; if (ka>30) ka=30;
+  const S = A+B;
+  let p = [A,al,B,be,ka];
+  for (let it=0;it<80;it++) {
+    const [a0,al0,b0,be0,ka0]=p, J=[], r=[]; const S0=a0+b0;
+    for (let i=0;i<n;i++) { const eA=Math.exp(-al0*t[i]), eB=Math.exp(-be0*t[i]), eKa=Math.exp(-ka0*t[i]), pr=a0*eA+b0*eB-S0*eKa, sw=Math.sqrt(w[i]); r.push((c[i]-pr)*sw); J.push([(eA-eKa)*sw,(-a0*t[i]*eA)*sw,(eB-eKa)*sw,(-b0*t[i]*eB)*sw,(S0*t[i]*eKa)*sw]); }
+    const H = matMulT(J,data.map(()=>1)), JTr = matMulVec(J,r);
+    for (let i=0;i<5;i++) H[i][i]*=1.001;
+    const dP = solveLin(H,JTr); for (let i=0;i<5;i++) p[i]+=dP[i];
+    if (p[0]<0) p[0]=a0*0.5; if (p[1]<0) p[1]=al0*0.5; if (p[2]<0) p[2]=b0*0.5; if (p[3]<0) p[3]=be0*0.5; if (p[4]<0) p[4]=ka0*0.5;
+    if (p[1]<=p[3]) p[1]=p[3]*3; if (p[4]<=p[1]) p[4]=p[1]*2;
+    if (Math.sqrt(dP.reduce((s,v)=>s+v*v,0))<1e-8) break;
+  }
+  const [Af,alf,Bf,bef,kaf] = p, Sf = Af+Bf;
+  const tHa = Math.LN2/alf, tHb = Math.LN2/bef, tHk = Math.LN2/kaf;
+  const AUC = Af/alf + Bf/bef;
+  let Tmax=0.5, bestC=0;
+  for (let ti=0.01;ti<=20;ti+=0.01) { const ct = Af*Math.exp(-alf*ti)+Bf*Math.exp(-bef*ti)-Sf*Math.exp(-kaf*ti); if (ct>bestC) { bestC=ct; Tmax=ti; } }
+  const Cmax = Af*Math.exp(-alf*Tmax)+Bf*Math.exp(-bef*Tmax)-Sf*Math.exp(-kaf*Tmax);
+  const VdF = dose/(bef*AUC), CLF = bef*VdF;
+  const pred = data.map(d => Af*Math.exp(-alf*d.t)+Bf*Math.exp(-bef*d.t)-Sf*Math.exp(-kaf*d.t)), res = data.map((d,i)=>d.c-pred[i]);
+  const ssR = res.reduce((s,r,i)=>s+w[i]*r*r,0), cMn = data.reduce((s,d)=>s+d.c,0)/n;
+  const ssT = data.reduce((s,d,i)=>s+w[i]*(d.c-cMn)**2,0);
+  return { params:[
+    {k:'ka',l:'ka (吸收速率)',v:kaf,u:'1/h',f:v=>v.toFixed(4)},{k:'tHalfKa',l:'t₁/₂(ka)',v:tHk,u:'h',f:v=>v.toFixed(3)},
+    {k:'A',l:'A (分布相截距)',v:Af,u:'mg/L',f:v=>v.toFixed(3)},{k:'alpha',l:'α (分布速率)',v:alf,u:'1/h',f:v=>v.toFixed(4)},{k:'tHalfA',l:'t₁/₂α',v:tHa,u:'h',f:v=>v.toFixed(3)},
+    {k:'B',l:'B (消除相截距)',v:Bf,u:'mg/L',f:v=>v.toFixed(3)},{k:'beta',l:'β (消除速率)',v:bef,u:'1/h',f:v=>v.toFixed(4)},{k:'tHalfB',l:'t₁/₂β',v:tHb,u:'h',f:v=>v.toFixed(3)},
+    {k:'Tmax',l:'Tmax',v:Tmax,u:'h',f:v=>v.toFixed(3)},{k:'Cmax',l:'Cmax',v:Cmax,u:'mg/L',f:v=>v.toFixed(3)},
+    {k:'AUC',l:'AUC₀→∞',v:AUC,u:'mg·h/L',f:v=>v.toFixed(3)},{k:'VdF',l:'Vd/F',v:VdF,u:'L',f:v=>v.toFixed(3)},{k:'CLF',l:'CL/F',v:CLF,u:'L/h',f:v=>v.toFixed(4)}
+  ], pred, res, rsq: ssT>0 ? 1-ssR/ssT : 0, aic: calcAIC(res,5), wss: calcWSS(res,data,w),
+    eq: `C(t)=${Af.toFixed(3)}×e^(−${alf.toFixed(4)}×t)+${Bf.toFixed(3)}×e^(−${bef.toFixed(4)}×t)−${Sf.toFixed(3)}×e^(−${kaf.toFixed(4)}×t)`, model:'two_oral', name:'二室·Oral' };
+}
+
+/* ============================================================
+   NONLINEAR PK (Michaelis-Menten)
+   ============================================================ */
+function fitNL(data, dose, w) {
+  const t = data.map(d=>d.t), c = data.map(d=>d.c), n = data.length;
+  const last = data[data.length-1], first = data[0];
+  const approxK = Math.log(first.c/last.c)/(last.t-first.t);
+  let Vmax = approxK*first.c*0.8, Km = first.c*0.5, Vd = dose/first.c*1.2;
+  if (Vmax<0.1) Vmax=1; if (Km<0.1) Km=1; if (Vd<0.1) Vd=10;
+  function predMM(ti, Vm, kM, vd) {
+    const C0 = dose/vd; let Ct = C0, tt = 0, dt = 0.05;
+    while (tt < ti) { if (ti-tt < dt) dt = ti-tt;
+      const f = c => -Vm*c/(kM+c); const k1=f(Ct), k2=f(Ct+0.5*dt*k1), k3=f(Ct+0.5*dt*k2), k4=f(Ct+dt*k3);
+      Ct += (k1+2*k2+2*k3+k4)/6*dt; tt += dt; }
+    return Ct;
+  }
+  const dim=3;
+  let simplex = [[Vmax,Km,Vd],[Vmax*1.2,Km,Vd],[Vmax,Km*1.3,Vd],[Vmax,Km,Vd*1.2]];
+  function sseP(p) { let s=0; for (let i=0;i<n;i++) { const pr = predMM(t[i],p[0],p[1],p[2]); s += w[i]*(c[i]-pr)**2; } return s; }
+  for (let it=0;it<300;it++) {
+    simplex.sort((a,b)=>sseP(a)-sseP(b));
+    const cent = [0,0,0]; for (let i=0;i<dim;i++) for (let j=0;j<dim;j++) cent[j] += simplex[i][j]/dim;
+    const refl = cent.map((v,j)=>v+1.0*(v-simplex[dim][j]));
+    if (sseP(refl)<sseP(simplex[0])) { const expd = cent.map((v,j)=>v+2.0*(v-simplex[dim][j])); simplex[dim] = sseP(expd)<sseP(refl)?expd:refl; }
+    else if (sseP(refl)<sseP(simplex[dim-1])) simplex[dim] = refl;
+    else { const contr = cent.map((v,j)=>v+0.5*(simplex[dim][j]-cent[j])); simplex[dim] = sseP(contr)<sseP(simplex[dim])?contr:simplex.map((v,j)=>j===0?v:simplex[0].map((x,k)=>simplex[0][k]+0.5*(v[k]-simplex[0][k])))[dim]; }
+  }
+  simplex.sort((a,b)=>sseP(a)-sseP(b));
+  const [VmaxF,KmF,VdF] = simplex[0];
+  const pred = data.map(d => predMM(d.t,VmaxF,KmF,VdF)), res = data.map((d,i)=>d.c-pred[i]);
+  const ssR = res.reduce((s,r,i)=>s+w[i]*r*r,0), cMn = data.reduce((s,d)=>s+d.c,0)/n;
+  const ssT = data.reduce((s,d,i)=>s+w[i]*(d.c-cMn)**2,0);
+  const C0 = dose/VdF, tHLow = Math.LN2*KmF/VmaxF;
+  return { params:[
+    {k:'Vmax',l:'Vmax (最大消除速率)',v:VmaxF,u:'mg/L/h',f:v=>v.toFixed(4)},{k:'Km',l:'Km (米氏常数)',v:KmF,u:'mg/L',f:v=>v.toFixed(4)},
+    {k:'Vd',l:'Vd',v:VdF,u:'L',f:v=>v.toFixed(3)},{k:'C0',l:'C₀ (初始浓度)',v:C0,u:'mg/L',f:v=>v.toFixed(3)},
+    {k:'tHalfLow',l:'t₁/₂ (低浓度)',v:tHLow,u:'h',f:v=>v.toFixed(3)}
+  ], pred, res, rsq: ssT>0 ? 1-ssR/ssT : 0, aic: calcAIC(res,3), wss: calcWSS(res,data,w),
+    eq: `dC/dt = −${VmaxF.toFixed(4)}×C/(${KmF.toFixed(4)}+C)  |  C₀ = ${dose}/${VdF.toFixed(3)} = ${C0.toFixed(3)} mg/L`, model:'nonlinear', name:'非线性动力学' };
+}
+
+/* ============================================================
+   NCA
+   ============================================================ */
+function calcNCA(data, dose) {
+  const t = data.map(d=>d.t), c = data.map(d=>d.c), n = data.length;
+  let auc=0, aumc=0;
+  for (let i=1;i<n;i++) { const dt=t[i]-t[i-1], cav=(c[i]+c[i-1])/2; auc+=cav*dt; aumc+=cav*dt*(t[i]+t[i-1])/2; }
+  const nT = Math.min(4, Math.max(2, Math.floor(n*0.3)));
+  const td = data.slice(-nT), reg = linReg(td.map(d=>d.t), td.map(d=>Math.log(d.c)), null);
+  const lz = -reg.slope, tH = Math.LN2/lz, Clast = c[n-1];
+  const aucE = Clast/lz, aumcE = Clast*(t[n-1]/lz+1/(lz*lz));
+  const aucI = auc+aucE, aumcI = aumc+aumcE, mrt = aumcI/aucI, CL = dose/aucI, Vss = CL*mrt, Vz = dose/(lz*aucI);
+  const params = [
+    {k:'lz',l:'λz (末端消除速率)',v:lz,u:'1/h',f:v=>v.toFixed(4)},{k:'tHalf',l:'t₁/₂',v:tH,u:'h',f:v=>v.toFixed(3)},
+    {k:'AUClast',l:'AUC₀₋ₜ',v:auc,u:'mg·h/L',f:v=>v.toFixed(3)},{k:'AUCinf',l:'AUC₀→∞',v:aucI,u:'mg·h/L',f:v=>v.toFixed(3)},
+    {k:'AUMClast',l:'AUMC₀₋ₜ',v:aumc,u:'mg·h²/L',f:v=>v.toFixed(3)},{k:'AUMCinf',l:'AUMC₀→∞',v:aumcI,u:'mg·h²/L',f:v=>v.toFixed(3)},
+    {k:'MRT',l:'MRT₀→∞',v:mrt,u:'h',f:v=>v.toFixed(3)},{k:'CL',l:'CL',v:CL,u:'L/h',f:v=>v.toFixed(4)},
+    {k:'Vss',l:'Vss (稳态)',v:Vss,u:'L',f:v=>v.toFixed(3)},{k:'Vz',l:'Vz (末端)',v:Vz,u:'L',f:v=>v.toFixed(3)},
+    {k:'aucExt',l:'AUC外推%',v:aucE/aucI*100,u:'%',f:v=>v.toFixed(2)}
+  ];
+  const pred = data.map(d=>d.c), res = data.map(()=>0);
+  return { params, pred, res, rsq: reg.rsq, aic: 0, wss: 0, eq: `非房室模型 · 梯形法AUC · 末端λz = ${lz.toFixed(4)} 1/h`, model:'nca', name:'NCA' };
+}
+
+/* ============================================================
+   INTELLIGENT MODEL SELECTION
+   ============================================================ */
+function autoSelect(data, dose, route, wt) {
+  const w = getW(data, wt);
+  const results = [];
+  try {
+    if (route === 'bolus') {
+      results.push(fitSB(data, dose, w));
+      results.push(fit2B(data, dose, w));
+      try { results.push(fitNL(data, dose, w)); } catch(e) {}
+    } else if (route === 'oral') {
+      results.push(fitSO(data, dose, 1, w));
+      results.push(fit2O(data, dose, 1, w));
+    }
+    results.sort((a,b) => a.aic - b.aic);
+    return results;
+  } catch(e) { return results; }
+}
+
+/* ============================================================
+   OUTLIER DETECTION
+   ============================================================ */
+function detectOutliers(data, pred, res) {
+  const n = data.length;
+  const mse = res.reduce((s,r)=>s+r*r,0) / Math.max(1, n - 2);
+  const sd = Math.sqrt(mse);
+  const idx = [];
+  for (let i = 0; i < n; i++) {
+    if (Math.abs(res[i]) > 2 * sd) idx.push(i);
+  }
+  return idx;
+}
+
+/* ============================================================
+   MULTI-DOSE SIMULATION
+   ============================================================ */
+function singleDoseConc(t, params, model, dose, route) {
+  if (model === 'single_bolus') {
+    const C0 = params.find(x=>x.k==='C0').v, K = params.find(x=>x.k==='K').v;
+    return C0 * Math.exp(-K*t);
+  }
+  if (model === 'single_oral') {
+    const K = params.find(x=>x.k==='K').v, ka = params.find(x=>x.k==='ka').v;
+    const tmax = params.find(x=>x.k==='Tmax').v, cmax = params.find(x=>x.k==='Cmax').v;
+    const A = cmax / (Math.exp(-K*tmax) - Math.exp(-ka*tmax));
+    return A * (Math.exp(-K*t) - Math.exp(-ka*t));
+  }
+  if (model === 'single_infusion') {
+    const K = params.find(x=>x.k==='K').v, Vd = params.find(x=>x.k==='Vd').v;
+    const k0 = params.find(x=>x.k==='k0').v, CT = params.find(x=>x.k==='CT').v;
+    const Tinf = parseFloat($('infusionTime').value) || 2;
+    return t < Tinf ? (k0/(Vd*K))*(1-Math.exp(-K*t)) : CT*Math.exp(-K*(t-Tinf));
+  }
+  if (model === 'two_bolus' || model === 'two_oral') {
+    const A = params.find(x=>x.k==='A').v, al = params.find(x=>x.k==='alpha').v;
+    const B = params.find(x=>x.k==='B').v, be = params.find(x=>x.k==='beta').v;
+    if (model === 'two_bolus') return A*Math.exp(-al*t)+B*Math.exp(-be*t);
+    const ka = params.find(x=>x.k==='ka').v, S = A+B;
+    return A*Math.exp(-al*t)+B*Math.exp(-be*t)-S*Math.exp(-ka*t);
+  }
+  if (model === 'nonlinear') {
+    const Vmax = params.find(x=>x.k==='Vmax').v, Km = params.find(x=>x.k==='Km').v, Vd = params.find(x=>x.k==='Vd').v;
+    const C0 = (parseFloat($('dose').value)||100)/Vd;
+    let Ct = C0, tt = 0, dt = 0.05;
+    while (tt < t) { if (t-tt < dt) dt = t-tt;
+      const f = c => -Vmax*c/(Km+c); const k1=f(Ct), k2=f(Ct+0.5*dt*k1), k3=f(Ct+0.5*dt*k2), k4=f(Ct+dt*k3);
+      Ct += (k1+2*k2+2*k3+k4)/6*dt; tt += dt; }
+    return Ct;
+  }
+  return 0;
+}
+
+function runSimulation() {
+  if (!lastResult || !lastModel) { showToast('请先完成药动学参数计算'); return; }
+  const dose = parseFloat($('simDose').value) || 100;
+  const interval = parseFloat($('simInterval').value) || 12;
+  const numDoses = parseInt($('simNum').value) || 5;
+  const tMax = interval * (numDoses + 1);
+  const steps = 300;
+  const curve = [];
+  for (let i = 0; i <= steps; i++) {
+    const t = tMax * i / steps;
+    let c = 0;
+    for (let d = 0; d < numDoses; d++) {
+      const td = t - d * interval;
+      if (td > 0 && lastResult) c += singleDoseConc(td, lastResult.params, lastModel, dose, $('route').value);
+    }
+    curve.push({ t, c });
+  }
+  // Find steady state
+  const lastCycle = curve.filter(p => p.t >= (numDoses - 1) * interval && p.t <= numDoses * interval);
+  const Cmax_ss = Math.max(...lastCycle.map(p => p.c));
+  const Cmin_ss = Math.min(...lastCycle.map(p => p.c));
+  const Cav_ss = lastCycle.reduce((s, p) => s + p.c, 0) / lastCycle.length;
+
+  // Render
+  if (charts.sim) charts.sim.destroy();
+  const ctx = $('simChart').getContext('2d');
+  charts.sim = new Chart(ctx, {
+    type: 'scatter',
+    data: { datasets: [
+      { label: '模拟浓度', data: curve.map(p => ({ x: p.t, y: p.c })), type: 'line', borderColor: '#1a7a5c', backgroundColor: 'rgba(26,122,92,0.1)', fill: true, tension: 0.2, pointRadius: 0, borderWidth: 2 },
+      { label: '给药时间', data: Array.from({length: numDoses}, (_,i) => ({ x: i*interval, y: 0 })), backgroundColor: '#e74c3c', pointRadius: 6, pointStyle: 'triangle' }
+    ]},
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'top', labels: {font:{size:11}} } },
+      scales: { x: { title: {display:true, text:'时间 (h)', font:{size:12}} }, y: { title: {display:true, text:'浓度 (mg/L)', font:{size:12}}, beginAtZero:true } }
+    }
+  });
+  $('simResult').innerHTML = `💊 ${numDoses}次给药 · 间隔${interval}h · 剂量${dose}mg<br>
+    Cmax_ss = <strong>${Cmax_ss.toFixed(3)}</strong> mg/L &nbsp;|&nbsp;
+    Cmin_ss = <strong>${Cmin_ss.toFixed(3)}</strong> mg/L &nbsp;|&nbsp;
+    Cav_ss = <strong>${Cav_ss.toFixed(3)}</strong> mg/L &nbsp;|&nbsp;
+    波动度 = <strong>${((Cmax_ss - Cmin_ss) / Cav_ss * 100).toFixed(1)}</strong>%`;
+  showToast('✅ 多剂量模拟完成');
+}
+
+/* ============================================================
+   AUC SEGMENT
+   ============================================================ */
+function calcAucSegment() {
+  if (!lastResult || !lastData) { showToast('请先完成计算'); return; }
+  const start = parseFloat($('aucStart').value) || 0;
+  const end = parseFloat($('aucEnd').value) || 0;
+  if (end <= start) { showToast('结束时间需大于起始时间'); return; }
+  const steps = 500, dt = (end - start) / steps;
+  let auc = 0;
+  for (let i = 0; i < steps; i++) {
+    const t1 = start + i * dt, t2 = start + (i + 1) * dt;
+    const c1 = predConc(t1), c2 = predConc(t2);
+    auc += (c1 + c2) / 2 * dt;
+  }
+  $('aucSegResult').innerHTML = `🕐 AUC<sub>${start.toFixed(1)}→${end.toFixed(1)}</sub> = <strong>${auc.toFixed(3)}</strong> mg·h/L`;
+}
+
+/* ============================================================
+   PREDICTION FUNCTION
+   ============================================================ */
+function predConc(t) {
+  if (!lastResult || !lastModel) return 0;
+  return singleDoseConc(t, lastResult.params, lastModel, parseFloat($('dose').value) || 100, $('route').value);
+}
+
+/* ============================================================
+   MAIN CALCULATION
+   ============================================================ */
+function calculate() {
+  const data = getValidData();
+  if (data.length < 3) { showToast('⚠️ 至少需要 3 个有效数据点'); return; }
+  const auto = $('autoModel').checked;
+  const model = auto ? 'single' : $('modelType').value;
+  const route = auto ? 'bolus' : $('route').value;
+  const dose = parseFloat($('dose').value);
+  if (!dose || dose <= 0) { showToast('⚠️ 请输入有效剂量'); return; }
+  const wt = $('weighting').value;
+  const w = getW(data, wt);
+  const status = $('statusMsg'), calcBtn = $('calcBtn');
+
+  try {
+    calcBtn.disabled = true;
+    status.textContent = '⏳ 计算中...';
+    hideResults();
+
+    // Intelligent model selection
+    if (auto) {
+      const results = autoSelect(data, dose, route, wt);
+      if (results.length === 0) throw new Error('所有模型拟合均失败');
+      allModelResults = results;
+      const best = results[0];
+      lastResult = best; lastData = data; lastModel = best.model; lastModelName = best.name;
+      displayModelComp(results);
+      displayResults(best, data, wt);
+      status.textContent = `✅ 智能判断完成 · 推荐：${best.name} (AIC=${best.aic.toFixed(2)})`;
+      status.className = 'status-msg success';
+      return;
+    }
+
+    let result;
+    if (model === 'nca') result = calcNCA(data, dose);
+    else if (model === 'single') {
+      if (route === 'bolus') result = fitSB(data, dose, w);
+      else if (route === 'oral') { const F = parseFloat($('bioavail').value) || 1; result = fitSO(data, dose, F, w); }
+      else if (route === 'infusion') { const Ti = parseFloat($('infusionTime').value); if (!Ti||Ti<=0) throw new Error('请输入滴注时间'); result = fitSI(data, dose, Ti, w); }
+    } else if (model === 'two') {
+      if (route === 'bolus') result = fit2B(data, dose, w);
+      else if (route === 'oral') { const F = parseFloat($('bioavail').value) || 1; result = fit2O(data, dose, F, w); }
+      else throw new Error('二室暂不支持静滴');
+    } else if (model === 'nonlinear') result = fitNL(data, dose, w);
+    else throw new Error('未知模型');
+
+    lastResult = result; lastData = data; lastModel = result.model; lastModelName = result.name;
+    allModelResults = [];
+    displayResults(result, data, wt);
+    status.textContent = '✅ 计算完成';
+    status.className = 'status-msg success';
+  } catch (e) {
+    console.error(e); status.textContent = '❌ ' + e.message;
+    status.className = 'status-msg error'; showToast('❌ ' + e.message);
+  } finally { calcBtn.disabled = false; }
+}
+
+/* ============================================================
+   DISPLAY
+   ============================================================ */
+function displayModelComp(results) {
+  $('compCard').style.display = 'block';
+  const div = $('compContent');
+  let html = `<table class="table-comp"><tr><th>模型</th><th>R²</th><th>AIC</th><th>WSS</th><th>推荐</th></tr>`;
+  for (const r of results) {
+    const isBest = r === results[0];
+    html += `<tr class="${isBest?'best':''}"><td>${r.name||r.model}</td><td>${r.rsq.toFixed(4)}</td><td>${r.aic===Infinity?'∞':r.aic.toFixed(2)}</td><td>${r.wss.toExponential(3)}</td><td>${isBest?'⭐ 推荐':'—'}</td></tr>`;
+  }
+  html += '</table>';
+  html += `<div style="font-size:11px;color:#888;margin-top:6px">💡 AIC 越小越优 · 绿色高亮为推荐模型</div>`;
+  div.innerHTML = html;
+}
+
+function displayResults(result, data, wt) {
+  const isNCA = result.model === 'nca';
+
+  // Equation
+  $('eqCard').style.display = 'block';
+  $('eqDisplay').textContent = result.eq;
+
+  // Parameters
+  if (isNCA) {
+    $('paramsCard').style.display = 'none';
+    $('ncaCard').style.display = 'block';
+    const tbl = $('ncaTable');
+    tbl.innerHTML = '<tr><th>参数</th><th>数值</th><th>单位</th></tr>';
+    for (const p of result.params) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td><strong>${p.l}</strong></td><td>${p.f(p.v)}</td><td>${p.u}</td>`;
+      tbl.appendChild(tr);
+    }
+  } else {
+    $('ncaCard').style.display = 'none';
+    $('paramsCard').style.display = 'block';
+    const grid = $('paramsGrid'); grid.innerHTML = '';
+    for (const p of result.params) {
+      const div = document.createElement('div');
+      div.className = 'param-card' + (['K','ka','alpha','beta','Vmax','tHalf'].includes(p.k) ? ' highlight' : '');
+      div.innerHTML = `<div class="param-label">${p.l}</div><div class="param-value">${p.f(p.v)}</div><div class="param-unit">${p.u}</div>`;
+      grid.appendChild(div);
+    }
+  }
+
+  // Goodness of fit
+  const gof = $('gofRow');
+  gof.style.display = 'flex';
+  $('rsq').textContent = result.rsq.toFixed(4);
+  $('aic').textContent = result.aic === Infinity ? '∞' : result.aic === -Infinity ? '—' : result.aic.toFixed(2);
+  $('wss').textContent = result.wss ? result.wss.toExponential(4) : '—';
+  $('npts').textContent = data.length;
+
+  // Outlier detection
+  outlierIdx = [];
+  if (!isNCA) {
+    outlierIdx = detectOutliers(data, result.pred, result.res);
+    if (outlierIdx.length > 0) {
+      $('rmOutlierBtn').style.display = 'inline-flex';
+      $('outlierBadge').style.display = 'inline';
+      $('outlierBadge').textContent = `⚠️ ${outlierIdx.length}个异常值`;
+    } else {
+      $('rmOutlierBtn').style.display = 'none';
+      $('outlierBadge').style.display = 'none';
+    }
+    renderTable();
+  }
+
+  // AUC Segment
+  $('aucSegCard').style.display = 'block';
+  $('aucEnd').value = data[data.length-1].t.toFixed(1);
+
+  // Multi-dose Simulation
+  $('simCard').style.display = 'block';
+  $('simDose').value = $('dose').value;
+  $('simResult').innerHTML = '点击「模拟」按钮查看多剂量给药曲线';
+
+  // Charts
+  $('chartCard').style.display = 'block';
+  renderCharts(data, result);
+}
+
+function hideResults() {
+  $('compCard').style.display = 'none';
+  $('eqCard').style.display = 'none';
+  $('paramsCard').style.display = 'none';
+  $('ncaCard').style.display = 'none';
+  $('chartCard').style.display = 'none';
+  $('aucSegCard').style.display = 'none';
+  $('simCard').style.display = 'none';
+  $('gofRow').style.display = 'none';
+  $('rmOutlierBtn').style.display = 'none';
+  $('outlierBadge').style.display = 'none';
+}
+
+function removeOutliers() {
+  if (outlierIdx.length === 0) return;
+  // Remove from end to start to keep indices valid
+  const toRemove = [...outlierIdx].sort((a,b) => b - a);
+  for (const idx of toRemove) {
+    dataPoints.splice(idx, 1);
+  }
+  outlierIdx = [];
+  renderTable();
+  $('rmOutlierBtn').style.display = 'none';
+  $('outlierBadge').style.display = 'none';
+  showToast(`✅ 已剔除 ${toRemove.length} 个异常值，请重新计算`);
+}
+
+/* ============================================================
+   CHARTS
+   ============================================================ */
+function renderCharts(data, result) {
+  const tMax = Math.max(...data.map(d=>d.t)) * 1.3 + 0.5;
+  const steps = 120;
+  const smoothT = Array.from({length: steps+1}, (_,i) => tMax*i/steps);
+  const smoothC = smoothT.map(t => singleDoseConc(t, result.params, result.model, parseFloat($('dose').value)||100, $('route').value));
+
+  const col = { main:'#0f4c81', mf:'rgba(15,76,129,0.12)', sec:'#1a7a5c', sf:'rgba(26,122,92,0.1)', pt:'#e74c3c' };
+
+  Object.values(charts).forEach(c => { if (c && c !== charts.sim) { c.destroy(); } });
+
+  // Linear
+  charts.linear = new Chart($('linearChart').getContext('2d'), { type:'scatter', data:{ datasets:[
+    {label:'拟合曲线', data:smoothT.map((t,i)=>({x:t,y:smoothC[i]})), type:'line', borderColor:col.main, backgroundColor:col.mf, fill:true, tension:0.3, pointRadius:0, borderWidth:2},
+    {label:'实测值', data:data.map(d=>({x:d.t,y:d.c})), backgroundColor:col.pt, pointRadius:5, pointStyle:'circle'}
+  ]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top',labels:{font:{size:11}}}}, scales:{x:{title:{display:true,text:'时间 (h)',font:{size:12}}},y:{title:{display:true,text:'浓度 (mg/L)',font:{size:12}},beginAtZero:true}} } });
+
+  // Semilog
+  const minC = Math.min(...data.filter(d=>d.c>0).map(d=>d.c));
+  charts.semilog = new Chart($('semilogChart').getContext('2d'), { type:'scatter', data:{ datasets:[
+    {label:'拟合曲线', data:smoothT.map((t,i)=>({x:t,y:Math.max(smoothC[i],minC*0.01)})).filter(d=>d.y>0), type:'line', borderColor:col.sec, backgroundColor:col.sf, fill:true, tension:0.3, pointRadius:0, borderWidth:2},
+    {label:'实测值', data:data.filter(d=>d.c>0).map(d=>({x:d.t,y:d.c})), backgroundColor:col.pt, pointRadius:5, pointStyle:'circle'}
+  ]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top',labels:{font:{size:11}}}}, scales:{x:{title:{display:true,text:'时间 (h)',font:{size:12}}},y:{title:{display:true,text:'浓度 (mg/L, 对数)',font:{size:12}},type:'logarithmic',min:Math.max(minC*0.05,0.001)}} } });
+
+  // Residual
+  charts.residual = new Chart($('residualChart').getContext('2d'), { type:'scatter', data:{ datasets:[
+    {label:'加权残差', data:data.map((d,i)=>({x:d.t,y:result.res[i]})), backgroundColor:result.res.map(r=>r>=0?'#e74c3c':'#3498db'), pointRadius:5},
+    {label:'零线', data:[{x:0,y:0},{x:tMax,y:0}], type:'line', borderColor:'#888', borderDash:[4,4], pointRadius:0, borderWidth:1}
+  ]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top',labels:{font:{size:11}}}}, scales:{x:{title:{display:true,text:'时间 (h)',font:{size:12}}},y:{title:{display:true,text:'残差',font:{size:12}}}} } });
+
+  // Pred vs Obs
+  const maxV = Math.max(...data.map(d=>d.c), ...result.pred);
+  charts.predObs = new Chart($('predObsChart').getContext('2d'), { type:'scatter', data:{ datasets:[
+    {label:'预测 vs 实测', data:data.map((d,i)=>({x:d.c,y:result.pred[i]})), backgroundColor:'#0f4c81', pointRadius:5},
+    {label:'y=x', data:[{x:0,y:0},{x:maxV*1.1,y:maxV*1.1}], type:'line', borderColor:'#888', borderDash:[4,4], pointRadius:0, borderWidth:1}
+  ]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top',labels:{font:{size:11}}}}, scales:{x:{title:{display:true,text:'实测 (mg/L)',font:{size:12}}},y:{title:{display:true,text:'预测 (mg/L)',font:{size:12}}}} } });
+}
+
+/* ============================================================
+   TAB SWITCHING
+   ============================================================ */
+function switchTab(tab) {
+  document.querySelectorAll('#plotTabs .tab-item').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  $('plotMain').style.display = tab === 'main' ? 'block' : 'none';
+  $('plotResidual').style.display = tab === 'residual' ? 'block' : 'none';
+  $('plotPredObs').style.display = tab === 'predvsobs' ? 'block' : 'none';
+  setTimeout(() => { Object.values(charts).forEach(c => { if (c) c.resize(); }); }, 100);
+}
+
+/* ============================================================
+   EXPORT CSV
+   ============================================================ */
+function exportCSV() {
+  if (!lastResult || !lastData) { showToast('请先完成计算'); return; }
+  let csv = '时间(h),实测浓度(mg/L),预测浓度(mg/L),残差\n';
+  for (let i = 0; i < lastData.length; i++) {
+    csv += `${lastData[i].t},${lastData[i].c},${lastResult.pred[i].toFixed(4)},${lastResult.res[i].toFixed(4)}\n`;
+  }
+  csv += '\n参数,数值,单位\n';
+  for (const p of lastResult.params) csv += `${p.l},${p.f(p.v)},${p.u}\n`;
+  csv += `\nR²,${lastResult.rsq.toFixed(4)}\nAIC,${lastResult.aic === Infinity ? '∞' : lastResult.aic.toFixed(2)}\n`;
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'PK_Results.csv'; a.click();
+  showToast('📤 CSV 已导出');
+}
+
+/* ============================================================
+   REPORT GENERATION
+   ============================================================ */
+function generateReport() {
+  if (!lastResult || !lastData) { showToast('请先完成计算'); return; }
+  const modelName = lastModelName || lastResult.model || '未知模型';
+  let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>PK分析报告</title>
+<style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;max-width:800px;margin:0 auto;padding:30px;color:#1a1a2e}
+h1{color:#0f4c81;border-bottom:3px solid #0f4c81;padding-bottom:10px}
+h2{color:#0f4c81;margin-top:24px}
+table{width:100%;border-collapse:collapse;margin:12px 0}
+th{background:#f8fafc;padding:8px 12px;text-align:left;font-weight:600;border-bottom:2px solid #e2e8f0}
+td{padding:6px 12px;border-bottom:1px solid #f0f2f5}
+.green{color:#1a7a5c;font-weight:700}
+.footer{color:#999;font-size:12px;margin-top:30px;border-top:1px solid #e2e8f0;padding-top:12px;text-align:center}
+</style></head><body>
+<h1>🏥 PK Analyzer Pro · 药动学分析报告</h1>
+<p style="color:#888">生成时间：${new Date().toLocaleString()} | 模型：${modelName}</p>
+<h2>📐 拟合方程</h2>
+<p style="font-family:Cambria,serif;font-size:16px;padding:12px;background:#f0f6ff;border-left:4px solid #0f4c81">${lastResult.eq}</p>
+<h2>📋 药动学参数</h2>
+<table><tr><th>参数</th><th>数值</th><th>单位</th></tr>`;
+  for (const p of lastResult.params) html += `<tr><td>${p.l}</td><td class="green">${p.f(p.v)}</td><td>${p.u}</td></tr>`;
+  html += `</table><h2>📊 拟合优度</h2><table><tr><th>指标</th><th>数值</th></tr>
+<tr><td>R²</td><td>${lastResult.rsq.toFixed(4)}</td></tr>
+<tr><td>AIC</td><td>${lastResult.aic === Infinity ? '∞' : lastResult.aic.toFixed(2)}</td></tr>
+<tr><td>数据点数</td><td>${lastData.length}</td></tr></table>
+<h2>📈 原始数据与拟合值</h2><table><tr><th>时间 (h)</th><th>实测浓度 (mg/L)</th><th>预测浓度 (mg/L)</th><th>残差</th></tr>`;
+  for (let i = 0; i < lastData.length; i++) {
+    html += `<tr><td>${lastData[i].t}</td><td>${lastData[i].c}</td><td>${lastResult.pred[i].toFixed(4)}</td><td>${lastResult.res[i].toFixed(4)}</td></tr>`;
+  }
+  html += `</table><div class="footer">💊 由 PK Analyzer Pro 生成 · 数据仅本地处理 · 仅供科研参考</div></body></html>`;
+  const blob = new Blob([html], {type:'text/html;charset=utf-8;'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'PK_Report.html'; a.click();
+  showToast('📑 报告已生成');
+}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+let toastTimer = null;
+function showToast(msg) {
+  toast.textContent = msg; toast.classList.add('visible');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('visible'), 3000);
+}
+</script>
+</body>
+</html>
